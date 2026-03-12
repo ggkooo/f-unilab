@@ -1,48 +1,74 @@
-# UniLab Tickets Manager
+# UniLab Frontend Totem
 
-Frontend application for creating digital service tickets for UniLab attendance flows.
+Aplicacao frontend do fluxo de senhas e atendimento da UniLab.
 
-The project is built with React + TypeScript + Vite and currently provides a single ticket request flow with service options, API integration, and user feedback handling.
+O projeto foi desenvolvido com React + TypeScript + Vite e possui duas areas principais:
 
-## Features
+- Tela publica para emissao de senha.
+- Tela protegida de atendente para chamar e concluir senhas.
 
-- Ticket creation screen with service cards.
-- Visual layout with reusable `Header`, `Footer`, and `Layout` components.
-- Ticket request sent to API through a dedicated service layer.
-- API configuration via environment variables.
-- Automatic success message dismissal after 3 seconds.
-- Error feedback handling for API/network/timeout cases.
-- Route-based entry point using `react-router-dom`.
+## Sumario
 
-## Tech Stack
+- Visao geral
+- Stack e dependencias
+- Estrutura do projeto
+- Requisitos
+- Configuracao do ambiente
+- Execucao local
+- Rotas da aplicacao
+- Integracao com API
+- Autenticacao e sessao
+- Scripts disponiveis
+- Padroes de desenvolvimento
+- Troubleshooting
+
+## Visao geral
+
+Principais funcionalidades implementadas:
+
+- Emissao de senha por tipo de servico.
+- Feedback visual de sucesso e erro no fluxo de emissao.
+- Painel de atendente com:
+  - fila em espera,
+  - atendimento atual,
+  - historico de concluidos.
+- Chamada de senha e conclusao de atendimento via API.
+- Selecao de senha por tipo na tela do atendente.
+- Polling automatico para manter fila/historico atualizados.
+
+## Stack e dependencias
 
 - React 19
 - TypeScript 5
 - Vite 7
 - React Router DOM 7
 - ESLint 9
-- Tailwind CSS (via CDN in `index.html`)
-- Google Material Icons (Outlined)
+- Tailwind CSS (utilizado via CDN no `index.html`)
+- Google Material Icons Outlined
 
-## Project Structure
+## Estrutura do projeto
 
 ```text
 .
+|-- .env
+|-- .env.example
 |-- index.html
 |-- package.json
 |-- src/
 |   |-- App.tsx
 |   |-- main.tsx
-|   |-- vite-env.d.ts
-|   |-- assets/
-|   |   |-- logo-unilab.png
+|   |-- auth/
+|   |   |-- session.ts
 |   |-- components/
+|   |   |-- auth/
+|   |   |   |-- ProtectedRoute.tsx
 |   |   |-- layout/
 |   |   |   |-- Footer/index.tsx
 |   |   |   |-- Header/index.tsx
 |   |   |   |-- Layout/index.tsx
 |   |   |-- ui/
-|   |   |   |-- ActionCard/index.tsx
+|   |       |-- ActionCard/index.tsx
+|   |       |-- CustomSelect/index.tsx
 |   |-- screens/
 |   |   |-- GetTicket/
 |   |   |   |-- components/
@@ -52,22 +78,47 @@ The project is built with React + TypeScript + Vite and currently provides a sin
 |   |   |   |-- constants.ts
 |   |   |   |-- index.tsx
 |   |   |   |-- types.ts
+|   |   |-- Attendent/
+|   |       |-- components/
+|   |       |   |-- AttendantTopBar.tsx
+|   |       |   |-- CurrentAttendanceCard.tsx
+|   |       |   |-- HistorySection.tsx
+|   |       |   |-- WaitingQueueSection.tsx
+|   |       |-- index.tsx
+|   |       |-- types.ts
+|   |       |-- utils.ts
 |   |-- services/
-|   |   |-- apiConfig.ts
-|   |   |-- ticketService.ts
+|       |-- apiConfig.ts
+|       |-- attendantService.ts
+|       |-- ticketService.ts
 ```
 
-## Getting Started
+## Requisitos
 
-### 1. Install dependencies
+- Node.js 20+
+- npm 10+
+
+## Configuracao do ambiente
+
+1. Instale as dependencias:
 
 ```bash
 npm install
 ```
 
-### 2. Configure environment variables
+2. Configure as variaveis de ambiente a partir do `.env.example`:
 
-Copy `.env.example` to `.env` and update values if needed:
+```bash
+cp .env.example .env
+```
+
+Se estiver no Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Ajuste os valores no `.env`:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api
@@ -76,46 +127,62 @@ VITE_API_KEY=your-api-key-here
 VITE_API_TIMEOUT_MS=10000
 ```
 
-Variables:
+Descricao das variaveis:
 
-- `VITE_API_BASE_URL`: API base URL.
-- `VITE_API_TICKETS_PATH`: Tickets endpoint path.
-- `VITE_API_KEY`: Optional API key sent as `X-API-KEY`.
-- `VITE_API_TIMEOUT_MS`: Request timeout in milliseconds.
+- `VITE_API_BASE_URL`: URL base da API.
+- `VITE_API_TICKETS_PATH`: caminho base do recurso de senhas.
+- `VITE_API_KEY`: chave opcional enviada como `X-API-KEY`.
+- `VITE_API_TIMEOUT_MS`: timeout das requisicoes em milissegundos.
 
-### 3. Run locally
+## Execucao local
+
+Suba o servidor de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-App default URL: `http://localhost:5173`
+URL padrao do Vite:
 
-## Available Scripts
+- `http://localhost:5173`
 
-- `npm run dev`: Start development server.
-- `npm run build`: Type-check and build production bundle.
-- `npm run preview`: Preview production build locally.
-- `npm run lint`: Run ESLint.
+Para validar build de producao:
 
-## Routing
+```bash
+npm run build
+```
 
-- `/`: Get Ticket screen.
+Para visualizar o build local:
 
-Routing is configured in `src/App.tsx` with `BrowserRouter` and `Routes`.
+```bash
+npm run preview
+```
 
-## API Integration
+## Rotas da aplicacao
 
-Ticket creation is isolated in `src/services/ticketService.ts`.
+As rotas estao definidas no `src/App.tsx`:
 
-### Request
+- `/`: tela publica de emissao de senha (`GetTicket`).
+- `/attendent`: tela protegida de atendimento (`Attendant`).
 
-- Method: `POST`
-- URL: `${VITE_API_BASE_URL}${VITE_API_TICKETS_PATH}`
-- Headers:
-  - `Content-Type: application/json`
-  - `X-API-KEY: <VITE_API_KEY>` (only when provided)
-- Body:
+## Integracao com API
+
+### Configuracao central
+
+Arquivo: `src/services/apiConfig.ts`
+
+- Normaliza URL base e paths.
+- Concentra `baseUrl`, `ticketsPath`, `apiKey` e `timeoutMs`.
+
+### Fluxo GetTicket
+
+Arquivo: `src/services/ticketService.ts`
+
+Endpoint principal:
+
+- `POST {baseUrl}{ticketsPath}`
+
+Body esperado:
 
 ```json
 {
@@ -123,38 +190,78 @@ Ticket creation is isolated in `src/services/ticketService.ts`.
 }
 ```
 
-### Service behavior
+Comportamento:
 
-- Uses `AbortController` timeout based on `VITE_API_TIMEOUT_MS`.
-- Parses API error message when available (`message` field).
-- Returns fallback messages for timeout and network failures.
+- Timeout com `AbortController`.
+- Leitura de mensagem da API (`message`) quando disponivel.
+- Fallback para mensagens padrao em timeout/falha de rede.
 
-## UI and UX Behavior
+### Fluxo Attendent
 
-- Service cards trigger ticket creation.
-- While submitting, the selected card subtitle changes to a loading message.
-- On success:
-  - Shows success feedback.
-  - Automatically hides feedback after 3 seconds.
-- On failure:
-  - Shows error feedback and keeps it visible until next interaction.
+Arquivo: `src/services/attendantService.ts`
 
-## Code Organization Notes
+Operacoes implementadas:
 
-- Screen container logic is in `src/screens/GetTicket/index.tsx`.
-- Visual sections were split into focused components:
-  - hero block
-  - feedback alert
-  - service options grid
-- API settings are centralized in `src/services/apiConfig.ts`.
+- `GET {baseUrl}{ticketsPath}`: lista fila e filtra pendentes.
+- `GET {baseUrl}{ticketsPath}/completed`: lista historico concluido.
+- `POST {baseUrl}{ticketsPath}/{id}/call`: chama senha.
+- `PATCH {baseUrl}{ticketsPath}/{id}/complete`: conclui senha.
 
-## Security Notes
+Headers utilizados conforme contexto:
 
-- `.env` files are ignored by Git.
-- Keep real API keys only in local or secret-managed environments.
-- Commit only `.env.example` with placeholder values.
+- `Content-Type: application/json`
+- `X-API-KEY: <VITE_API_KEY>` (quando definido)
+- `Authorization: Bearer <token>` (rotas autenticadas)
 
-## Current Status
+## Autenticacao e sessao
 
-- Main ticket flow implemented and build passing.
-- Modular structure ready for additional screens and services.
+Arquivos principais:
+
+- `src/auth/session.ts`
+- `src/components/auth/ProtectedRoute.tsx`
+
+Regras atuais:
+
+- Sessao lida de `sessionStorage` na chave `totem_auth`.
+- `ProtectedRoute` exige `access_token` para liberar rota protegida.
+- Sem token, o usuario e redirecionado para `/login`.
+
+Formato esperado da sessao (resumo):
+
+- `data.access_token`
+- `data.user.login`
+- `data.user.is_admin`
+
+## Scripts disponiveis
+
+- `npm run dev`: sobe ambiente de desenvolvimento.
+- `npm run build`: executa type-check e build de producao.
+- `npm run preview`: publica build local para validacao.
+- `npm run lint`: executa lint do projeto.
+
+## Padroes de desenvolvimento
+
+- Camada de API separada em `services`.
+- Componentes de tela separados por responsabilidade.
+- Tipos e utilitarios isolados por modulo (`types.ts`, `utils.ts`).
+- Erros de rede e timeout tratados explicitamente.
+
+## Troubleshooting
+
+Problemas comuns:
+
+- `Falha de comunicacao com a API`:
+  - verifique se backend esta ativo,
+  - confirme `VITE_API_BASE_URL` e `VITE_API_TICKETS_PATH`.
+- Erro de autorizacao em rotas de atendente:
+  - confirme presenca do token em `sessionStorage` (`totem_auth`),
+  - valide expiracao do token no backend.
+- Build falha por tipos:
+  - execute `npm run build` para ver erro completo,
+  - ajuste imports/caminhos conforme estrutura atual de pastas.
+
+## Status atual
+
+- Fluxo de emissao funcionando com feedback.
+- Tela de atendente modularizada por componentes e service dedicado.
+- Build de producao validado com sucesso.

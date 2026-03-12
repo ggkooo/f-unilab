@@ -4,6 +4,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Attendant from './screens/Attendent';
 import Login from './screens/Login';
 import Admin from './screens/Admin';
+import Tv from './screens/TV';
 
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<GetTicket />} />
+        <Route path="/tv" element={<Tv />} />
         <Route path="/login" element={<Login />} />
         <Route
           path="/attendent"
@@ -21,7 +23,7 @@ function App() {
           )}
         />
         <Route
-          path="/administration"
+          path="/admin"
           element={(
             <ProtectedRoute requireAdmin>
               <Admin />

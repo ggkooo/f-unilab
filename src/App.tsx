@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import GetTicket from './screens/GetTicket';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Attendant from './screens/Attendent';
+import Login from './screens/Login';
 
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<GetTicket />} />
+        <Route path="/login" element={<Login />} />
         <Route
           path="/attendent"
           element={(

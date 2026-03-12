@@ -1,73 +1,160 @@
-# React + TypeScript + Vite
+# UniLab Tickets Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend application for creating digital service tickets for UniLab attendance flows.
 
-Currently, two official plugins are available:
+The project is built with React + TypeScript + Vite and currently provides a single ticket request flow with service options, API integration, and user feedback handling.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- Ticket creation screen with service cards.
+- Visual layout with reusable `Header`, `Footer`, and `Layout` components.
+- Ticket request sent to API through a dedicated service layer.
+- API configuration via environment variables.
+- Automatic success message dismissal after 3 seconds.
+- Error feedback handling for API/network/timeout cases.
+- Route-based entry point using `react-router-dom`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React 19
+- TypeScript 5
+- Vite 7
+- React Router DOM 7
+- ESLint 9
+- Tailwind CSS (via CDN in `index.html`)
+- Google Material Icons (Outlined)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Project Structure
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+.
+|-- index.html
+|-- package.json
+|-- src/
+|   |-- App.tsx
+|   |-- main.tsx
+|   |-- vite-env.d.ts
+|   |-- assets/
+|   |   |-- logo-unilab.png
+|   |-- components/
+|   |   |-- layout/
+|   |   |   |-- Footer/index.tsx
+|   |   |   |-- Header/index.tsx
+|   |   |   |-- Layout/index.tsx
+|   |   |-- ui/
+|   |   |   |-- ActionCard/index.tsx
+|   |-- screens/
+|   |   |-- GetTicket/
+|   |   |   |-- components/
+|   |   |   |   |-- GetTicketFeedback.tsx
+|   |   |   |   |-- GetTicketHero.tsx
+|   |   |   |   |-- ServiceOptionsGrid.tsx
+|   |   |   |-- constants.ts
+|   |   |   |-- index.tsx
+|   |   |   |-- types.ts
+|   |-- services/
+|   |   |-- apiConfig.ts
+|   |   |-- ticketService.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 1. Install dependencies
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+### 2. Configure environment variables
+
+Copy `.env.example` to `.env` and update values if needed:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_TICKETS_PATH=/tickets
+VITE_API_KEY=your-api-key-here
+VITE_API_TIMEOUT_MS=10000
+```
+
+Variables:
+
+- `VITE_API_BASE_URL`: API base URL.
+- `VITE_API_TICKETS_PATH`: Tickets endpoint path.
+- `VITE_API_KEY`: Optional API key sent as `X-API-KEY`.
+- `VITE_API_TIMEOUT_MS`: Request timeout in milliseconds.
+
+### 3. Run locally
+
+```bash
+npm run dev
+```
+
+App default URL: `http://localhost:5173`
+
+## Available Scripts
+
+- `npm run dev`: Start development server.
+- `npm run build`: Type-check and build production bundle.
+- `npm run preview`: Preview production build locally.
+- `npm run lint`: Run ESLint.
+
+## Routing
+
+- `/`: Get Ticket screen.
+
+Routing is configured in `src/App.tsx` with `BrowserRouter` and `Routes`.
+
+## API Integration
+
+Ticket creation is isolated in `src/services/ticketService.ts`.
+
+### Request
+
+- Method: `POST`
+- URL: `${VITE_API_BASE_URL}${VITE_API_TICKETS_PATH}`
+- Headers:
+  - `Content-Type: application/json`
+  - `X-API-KEY: <VITE_API_KEY>` (only when provided)
+- Body:
+
+```json
+{
+  "service_type": "Atendimento Normal"
+}
+```
+
+### Service behavior
+
+- Uses `AbortController` timeout based on `VITE_API_TIMEOUT_MS`.
+- Parses API error message when available (`message` field).
+- Returns fallback messages for timeout and network failures.
+
+## UI and UX Behavior
+
+- Service cards trigger ticket creation.
+- While submitting, the selected card subtitle changes to a loading message.
+- On success:
+  - Shows success feedback.
+  - Automatically hides feedback after 3 seconds.
+- On failure:
+  - Shows error feedback and keeps it visible until next interaction.
+
+## Code Organization Notes
+
+- Screen container logic is in `src/screens/GetTicket/index.tsx`.
+- Visual sections were split into focused components:
+  - hero block
+  - feedback alert
+  - service options grid
+- API settings are centralized in `src/services/apiConfig.ts`.
+
+## Security Notes
+
+- `.env` files are ignored by Git.
+- Keep real API keys only in local or secret-managed environments.
+- Commit only `.env.example` with placeholder values.
+
+## Current Status
+
+- Main ticket flow implemented and build passing.
+- Modular structure ready for additional screens and services.

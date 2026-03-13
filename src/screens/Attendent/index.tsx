@@ -44,8 +44,15 @@ const Attendant: React.FC = () => {
     );
 
     const refreshCompletedHistory = async () => {
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+            setHistory((prev) => (prev.length === 0 ? prev : []));
+            return;
+        }
+
         try {
-            const completedTickets = await fetchCompletedTickets(loggedCounter);
+            const completedTickets = await fetchCompletedTickets(loggedCounter, accessToken);
 
             setHistory((prev) => {
                 const previousSignature = getHistorySignature(prev);

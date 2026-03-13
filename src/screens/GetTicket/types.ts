@@ -3,6 +3,11 @@ export type ServiceOption = {
     title: string;
     subtitle: string;
     variant: 'primary' | 'success' | 'warning';
+    fullWidth?: boolean;
+    badges?: Array<{
+        icon: string;
+        label: string;
+    }>;
 };
 
 export type FeedbackType = 'success' | 'error' | null;

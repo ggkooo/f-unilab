@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import './App.css';
 import GetTicket from './screens/GetTicket';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Attendant from './screens/Attendent';

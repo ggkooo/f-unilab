@@ -50,20 +50,20 @@ const request = async (path: string, init: RequestInit = {}) => {
         });
 
         if (!response.ok) {
-            throw new Error('Falha de comunicacao com a API de atendimento.');
+            throw new Error('Falha de comunicação com a API de atendimento.');
         }
 
         return response;
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('A requisicao de atendimento demorou demais. Tente novamente.');
+            throw new Error('A requisição de atendimento demorou demais. Tente novamente.');
         }
 
         if (error instanceof Error) {
             throw error;
         }
 
-        throw new Error('Falha de comunicacao com a API de atendimento.');
+        throw new Error('Falha de comunicação com a API de atendimento.');
     } finally {
         timeout.clear();
     }

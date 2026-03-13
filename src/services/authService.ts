@@ -3,7 +3,7 @@ import { apiConfig, buildApiUrl } from './apiConfig';
 
 const LOGIN_PATH = '/login';
 const DEFAULT_ERROR_MESSAGE = 'Falha ao autenticar.';
-const TIMEOUT_ERROR_MESSAGE = 'A requisicao demorou demais. Tente novamente.';
+const TIMEOUT_ERROR_MESSAGE = 'A requisição demorou demais. Tente novamente.';
 
 type LoginInput = {
     login: string;

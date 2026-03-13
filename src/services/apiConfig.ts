@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = 'http://localhost:8000/api';
+const DEFAULT_BASE_URL = '/api';
 const DEFAULT_TICKETS_PATH = '/tickets';
 const DEFAULT_TIMEOUT_MS = 10000;
 

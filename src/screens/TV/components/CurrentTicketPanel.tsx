@@ -42,7 +42,7 @@ const CurrentTicketPanel = ({ ticket, isLoading, error }: CurrentTicketPanelProp
                         </div>
 
                         <div className="mt-6 text-3xl lg:text-4xl text-slate-500 font-medium flex items-center gap-4 justify-center">
-                            <Badge color="#003B71">{ticket.serviceType}</Badge>
+                            <Badge color="#003B71" size="hero">{ticket.serviceType}</Badge>
                         </div>
                     </>
                 ) : (

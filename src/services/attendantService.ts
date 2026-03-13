@@ -118,3 +118,17 @@ export const completeTicket = async (ticketId: string, accessToken: string) => {
         headers: getApiHeaders(accessToken),
     });
 };
+
+export const cancelTicket = async (ticketId: string, accessToken: string) => {
+    await request(`${apiConfig.ticketsPath}/${ticketId}/cancel`, {
+        method: 'PATCH',
+        headers: getApiHeaders(accessToken),
+    });
+};
+
+export const recallTicket = async (ticketId: string, accessToken: string) => {
+    await request(`${apiConfig.ticketsPath}/${ticketId}/recall`, {
+        method: 'POST',
+        headers: getApiHeaders(accessToken),
+    });
+};

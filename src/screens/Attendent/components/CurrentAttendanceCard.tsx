@@ -8,10 +8,14 @@ interface CurrentAttendanceCardProps {
     serviceTypeOptions: SelectOption[];
     isLoadingQueue: boolean;
     callingTicketId: string | null;
+    isRecallingCurrentTicket: boolean;
     isCompletingCurrentTicket: boolean;
+    isCancellingCurrentTicket: boolean;
     onSelectedTypeChange: (serviceType: string) => void;
     onCallNext: () => void;
+    onRecallCurrentTicket: () => void;
     onCompleteCurrentTicket: () => void;
+    onCancelCurrentTicket: () => void;
     queueLength: number;
 }
 
@@ -21,10 +25,14 @@ const CurrentAttendanceCard: React.FC<CurrentAttendanceCardProps> = ({
     serviceTypeOptions,
     isLoadingQueue,
     callingTicketId,
+    isRecallingCurrentTicket,
     isCompletingCurrentTicket,
+    isCancellingCurrentTicket,
     onSelectedTypeChange,
     onCallNext,
+    onRecallCurrentTicket,
     onCompleteCurrentTicket,
+    onCancelCurrentTicket,
     queueLength,
 }) => {
     return (
@@ -55,7 +63,7 @@ const CurrentAttendanceCard: React.FC<CurrentAttendanceCardProps> = ({
 
                 <button
                     onClick={onCallNext}
-                    disabled={queueLength === 0 || isLoadingQueue || callingTicketId !== null}
+                    disabled={queueLength === 0 || isLoadingQueue || callingTicketId !== null || isRecallingCurrentTicket || isCompletingCurrentTicket || isCancellingCurrentTicket}
                     className="bg-primary hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all w-full text-white font-bold text-xl py-5 rounded-2xl shadow-lg flex items-center justify-center gap-3"
                 >
                     <span className="material-icons-outlined text-3xl">campaign</span>
@@ -63,12 +71,30 @@ const CurrentAttendanceCard: React.FC<CurrentAttendanceCardProps> = ({
                 </button>
 
                 <button
+                    onClick={onRecallCurrentTicket}
+                    disabled={!currentTicket || isRecallingCurrentTicket || isCompletingCurrentTicket || isCancellingCurrentTicket || callingTicketId !== null}
+                    className="border border-blue-500 text-blue-600 bg-white hover:bg-blue-500 hover:text-white disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed active:scale-[0.98] transition-all w-full font-bold text-xl py-5 rounded-2xl shadow-sm flex items-center justify-center gap-3"
+                >
+                    <span className="material-icons-outlined text-3xl">replay</span>
+                    {isRecallingCurrentTicket ? 'Repetindo...' : 'Repetir Chamada'}
+                </button>
+
+                <button
                     onClick={onCompleteCurrentTicket}
-                    disabled={!currentTicket || isCompletingCurrentTicket || callingTicketId !== null}
+                    disabled={!currentTicket || isRecallingCurrentTicket || isCompletingCurrentTicket || isCancellingCurrentTicket || callingTicketId !== null}
                     className="border border-success text-success bg-white hover:bg-success hover:text-white disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed active:scale-[0.98] transition-all w-full font-bold text-xl py-5 rounded-2xl shadow-sm flex items-center justify-center gap-3"
                 >
                     <span className="material-icons-outlined text-3xl">task_alt</span>
                     {isCompletingCurrentTicket ? 'Concluindo...' : 'Concluir Senha Atual'}
+                </button>
+
+                <button
+                    onClick={onCancelCurrentTicket}
+                    disabled={!currentTicket || isRecallingCurrentTicket || isCancellingCurrentTicket || isCompletingCurrentTicket || callingTicketId !== null}
+                    className="border border-rose-500 text-rose-600 bg-white hover:bg-rose-500 hover:text-white disabled:bg-slate-100 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed active:scale-[0.98] transition-all w-full font-bold text-xl py-5 rounded-2xl shadow-sm flex items-center justify-center gap-3"
+                >
+                    <span className="material-icons-outlined text-3xl">cancel</span>
+                    {isCancellingCurrentTicket ? 'Cancelando...' : 'Cancelar Senha Atual'}
                 </button>
             </div>
         </div>

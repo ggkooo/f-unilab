@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { clearAuthSession, getAccessToken, getAuthSession } from '../../auth/session';
 import {
+    cancelTicket,
     callTicket,
     completeTicket,
     fetchCompletedTickets,
     fetchWaitingTickets,
+    recallTicket,
 } from '../../services/attendantService';
 import AttendantTopBar from './components/AttendantTopBar';
 import CurrentAttendanceCard from './components/CurrentAttendanceCard';
@@ -23,7 +25,9 @@ const Attendant: React.FC = () => {
     const [selectedType, setSelectedType] = useState<string>(ALL_SERVICE_TYPES);
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
     const [callingTicketId, setCallingTicketId] = useState<string | null>(null);
+    const [isRecallingCurrentTicket, setIsRecallingCurrentTicket] = useState(false);
     const [isCompletingCurrentTicket, setIsCompletingCurrentTicket] = useState(false);
+    const [isCancellingCurrentTicket, setIsCancellingCurrentTicket] = useState(false);
     const [clockTick, setClockTick] = useState(0);
 
     const loggedCounter = getAuthSession()?.data?.user?.login ?? 'Guiche nao identificado';
@@ -179,6 +183,58 @@ const Attendant: React.FC = () => {
         }
     };
 
+    const handleRecallCurrentTicket = async () => {
+        if (!currentTicket) {
+            alert('Nenhuma senha em atendimento para repetir.');
+            return;
+        }
+
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+            alert('Sua sessao expirou. Faca login novamente.');
+            return;
+        }
+
+        setIsRecallingCurrentTicket(true);
+
+        try {
+            await recallTicket(currentTicket.id, accessToken);
+        } catch (error) {
+            console.error(error);
+            alert('Falha ao repetir a chamada da senha. Tente novamente.');
+        } finally {
+            setIsRecallingCurrentTicket(false);
+        }
+    };
+
+    const handleCancelCurrentTicket = async () => {
+        if (!currentTicket) {
+            alert('Nenhuma senha em atendimento para cancelar.');
+            return;
+        }
+
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+            alert('Sua sessao expirou. Faca login novamente.');
+            return;
+        }
+
+        setIsCancellingCurrentTicket(true);
+
+        try {
+            await cancelTicket(currentTicket.id, accessToken);
+            setCurrentTicket(null);
+            await refreshQueue();
+        } catch (error) {
+            console.error(error);
+            alert('Falha ao cancelar a senha. Tente novamente.');
+        } finally {
+            setIsCancellingCurrentTicket(false);
+        }
+    };
+
     const handleLogout = () => {
         clearAuthSession();
         navigate('/login', { replace: true });
@@ -196,10 +252,14 @@ const Attendant: React.FC = () => {
                         serviceTypeOptions={serviceTypeOptions}
                         isLoadingQueue={isLoadingQueue}
                         callingTicketId={callingTicketId}
+                        isRecallingCurrentTicket={isRecallingCurrentTicket}
                         isCompletingCurrentTicket={isCompletingCurrentTicket}
+                        isCancellingCurrentTicket={isCancellingCurrentTicket}
                         onSelectedTypeChange={setSelectedType}
                         onCallNext={() => void handleCallNext()}
+                        onRecallCurrentTicket={() => void handleRecallCurrentTicket()}
                         onCompleteCurrentTicket={() => void handleCompleteCurrentTicket()}
+                        onCancelCurrentTicket={() => void handleCancelCurrentTicket()}
                         queueLength={queue.length}
                     />
                 </div>

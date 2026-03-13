@@ -33,7 +33,7 @@ const CurrentTicketPanel = ({ ticket, isLoading, error }: CurrentTicketPanelProp
                         <div className="flex flex-col items-center gap-4 mb-8">
                             <div className="flex items-center justify-center gap-4">
                                 <span className="inline-flex items-center bg-gradient-to-r from-blue-500 to-sky-500 text-white px-10 py-6 rounded-[2.5rem] shadow-2xl text-5xl lg:text-7xl font-extrabold tracking-widest drop-shadow-lg">
-                                    Guiche
+                                    Guichê
                                     <span className="ml-6 text-7xl lg:text-9xl font-black text-white drop-shadow-xl">
                                         {formatCounterLabel(ticket.counterName)}
                                     </span>

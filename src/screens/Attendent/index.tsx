@@ -30,11 +30,11 @@ const Attendant: React.FC = () => {
     const [isCancellingCurrentTicket, setIsCancellingCurrentTicket] = useState(false);
     const [clockTick, setClockTick] = useState(0);
 
-    const loggedCounter = getAuthSession()?.data?.user?.login ?? 'Guiche nao identificado';
+    const loggedCounter = getAuthSession()?.data?.user?.login ?? 'Guichê não identificado';
 
     const serviceTypeOptions = useMemo(
         () => [
-            { label: 'Proxima Senha (Qualquer)', value: ALL_SERVICE_TYPES },
+            { label: 'Próxima Senha (Qualquer)', value: ALL_SERVICE_TYPES },
             ...Array.from(new Set(queue.map((ticket) => ticket.serviceType))).map((serviceType) => ({
                 label: serviceType,
                 value: serviceType,
@@ -112,14 +112,14 @@ const Attendant: React.FC = () => {
         const accessToken = getAccessToken();
 
         if (!accessToken) {
-            alert('Sua sessao expirou. Faca login novamente.');
+            alert('Sua sessão expirou. Faça login novamente.');
             return;
         }
 
         const selectedTicket = queue[ticketIndex];
 
         if (!selectedTicket) {
-            alert('Senha selecionada nao esta mais na fila.');
+            alert('Senha selecionada não está mais na fila.');
             return;
         }
 
@@ -153,7 +153,7 @@ const Attendant: React.FC = () => {
 
     const handleCallSpecificTicket = async (ticketId: string) => {
         const ticketIndex = queue.findIndex((ticket) => ticket.id === ticketId);
-        await callTicketAtIndex(ticketIndex, 'Senha selecionada nao esta mais na fila.');
+        await callTicketAtIndex(ticketIndex, 'Senha selecionada não está mais na fila.');
     };
 
     const handleCompleteCurrentTicket = async () => {
@@ -165,7 +165,7 @@ const Attendant: React.FC = () => {
         const accessToken = getAccessToken();
 
         if (!accessToken) {
-            alert('Sua sessao expirou. Faca login novamente.');
+            alert('Sua sessão expirou. Faça login novamente.');
             return;
         }
 
@@ -192,7 +192,7 @@ const Attendant: React.FC = () => {
         const accessToken = getAccessToken();
 
         if (!accessToken) {
-            alert('Sua sessao expirou. Faca login novamente.');
+            alert('Sua sessão expirou. Faça login novamente.');
             return;
         }
 
@@ -217,7 +217,7 @@ const Attendant: React.FC = () => {
         const accessToken = getAccessToken();
 
         if (!accessToken) {
-            alert('Sua sessao expirou. Faca login novamente.');
+            alert('Sua sessão expirou. Faça login novamente.');
             return;
         }
 

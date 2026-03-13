@@ -12,7 +12,7 @@ const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) 
     return (
         <section className="flex-1 flex flex-col bg-white/90 rounded-[3rem] shadow-xl border border-slate-100 p-8 lg:p-12 min-w-0">
             <h3 className="text-3xl lg:text-4xl font-bold text-[#003B71] mb-8 border-b-2 border-slate-100 pb-4 text-center">
-                Ultimas Chamadas
+                Últimas Chamadas
             </h3>
 
             <div className="flex flex-col gap-6 flex-shrink-0">
@@ -37,7 +37,7 @@ const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) 
                             <div className="flex flex-col items-end min-w-0">
                                 <Badge color="#003B71">{ticket.serviceType}</Badge>
                                 <span className="text-xl lg:text-2xl text-slate-500 block mt-2 text-right">
-                                    Guiche{' '}
+                                    Guichê{' '}
                                     <span className="text-4xl lg:text-5xl font-bold text-[#003B71] ml-2">
                                         {formatCounterLabel(ticket.counterName)}
                                     </span>

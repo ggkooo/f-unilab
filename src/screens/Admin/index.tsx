@@ -102,7 +102,7 @@ const Admin: React.FC = () => {
 
             syncUserForm(updatedUser);
         } catch (error) {
-            setUsersError(error instanceof Error ? error.message : 'Falha ao buscar usuarios.');
+            setUsersError(error instanceof Error ? error.message : 'Falha ao buscar usuários.');
             setUsers([]);
         } finally {
             setIsLoadingUsers(false);
@@ -116,7 +116,7 @@ const Admin: React.FC = () => {
         try {
             setVideos(await fetchAdminVideos(accessToken));
         } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao buscar videos.');
+            setVideosError(error instanceof Error ? error.message : 'Falha ao buscar vídeos.');
             setVideos([]);
         } finally {
             setIsLoadingVideos(false);
@@ -146,7 +146,7 @@ const Admin: React.FC = () => {
         e.preventDefault();
 
         if (!selectedUserId) {
-            setUsersError('Selecione um usuario para editar.');
+            setUsersError('Selecione um usuário para editar.');
             return;
         }
 
@@ -174,10 +174,10 @@ const Admin: React.FC = () => {
 
             await updateAdminUser(selectedUserId, payload, accessToken);
 
-            setUserSuccess('Usuario atualizado com sucesso.');
+            setUserSuccess('Usuário atualizado com sucesso.');
             await fetchUsers();
         } catch (error) {
-            setUsersError(error instanceof Error ? error.message : 'Falha ao salvar usuario.');
+            setUsersError(error instanceof Error ? error.message : 'Falha ao salvar usuário.');
         } finally {
             setIsSavingUser(false);
         }
@@ -196,10 +196,10 @@ const Admin: React.FC = () => {
                 syncUserForm(null);
             }
 
-            setUserSuccess('Usuario removido com sucesso.');
+            setUserSuccess('Usuário removido com sucesso.');
             await fetchUsers();
         } catch (error) {
-            setUsersError(error instanceof Error ? error.message : 'Falha ao remover usuario.');
+            setUsersError(error instanceof Error ? error.message : 'Falha ao remover usuário.');
         } finally {
             setDeletingUserId(null);
         }
@@ -207,9 +207,9 @@ const Admin: React.FC = () => {
 
     const handleDeleteUser = (userId: number) => {
         setConfirmDialog({
-            title: 'Remover usuario',
-            message: 'Deseja realmente remover este usuario? Esta acao nao pode ser desfeita.',
-            confirmLabel: 'Remover usuario',
+            title: 'Remover usuário',
+            message: 'Deseja realmente remover este usuário? Esta ação não pode ser desfeita.',
+            confirmLabel: 'Remover usuário',
             onConfirm: async () => {
                 await deleteUser(userId);
             },
@@ -224,7 +224,7 @@ const Admin: React.FC = () => {
         try {
             await toggleUserAdminRole(user, accessToken);
 
-            setUserSuccess(!user.is_admin ? 'Usuario promovido para administrador.' : 'Perfil administrativo removido.');
+            setUserSuccess(!user.is_admin ? 'Usuário promovido para administrador.' : 'Perfil administrativo removido.');
             await fetchUsers();
         } catch (error) {
             setUsersError(error instanceof Error ? error.message : 'Falha ao alterar perfil administrativo.');
@@ -237,7 +237,7 @@ const Admin: React.FC = () => {
         e.preventDefault();
 
         if (!selectedVideoFile) {
-            setVideosError('Selecione um arquivo de video para enviar.');
+            setVideosError('Selecione um arquivo de vídeo para enviar.');
             return;
         }
 
@@ -255,10 +255,10 @@ const Admin: React.FC = () => {
                 fileInput.value = '';
             }
 
-            setVideoSuccess('Video enviado com sucesso.');
+            setVideoSuccess('Vídeo enviado com sucesso.');
             await fetchVideos();
         } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao enviar video.');
+            setVideosError(error instanceof Error ? error.message : 'Falha ao enviar vídeo.');
         } finally {
             setIsUploadingVideo(false);
         }
@@ -272,10 +272,10 @@ const Admin: React.FC = () => {
         try {
             await deleteAdminVideo(filename, accessToken);
 
-            setVideoSuccess('Video removido com sucesso.');
+            setVideoSuccess('Vídeo removido com sucesso.');
             await fetchVideos();
         } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao remover video.');
+            setVideosError(error instanceof Error ? error.message : 'Falha ao remover vídeo.');
         } finally {
             setDeletingVideoName(null);
         }
@@ -283,9 +283,9 @@ const Admin: React.FC = () => {
 
     const handleDeleteVideo = (filename: string) => {
         setConfirmDialog({
-            title: 'Remover video',
-            message: `Deseja realmente remover o video ${filename}? Esta acao nao pode ser desfeita.`,
-            confirmLabel: 'Remover video',
+            title: 'Remover vídeo',
+            message: `Deseja realmente remover o vídeo ${filename}? Esta ação não pode ser desfeita.`,
+            confirmLabel: 'Remover vídeo',
             onConfirm: async () => {
                 await deleteVideo(filename);
             },

@@ -67,7 +67,7 @@ const CurrentAttendanceCard: React.FC<CurrentAttendanceCardProps> = ({
                     className="bg-primary hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all w-full text-white font-bold text-xl py-5 rounded-2xl shadow-lg flex items-center justify-center gap-3"
                 >
                     <span className="material-icons-outlined text-3xl">campaign</span>
-                    {callingTicketId ? 'Chamando...' : 'Chamar Proximo'}
+                    {callingTicketId ? 'Chamando...' : 'Chamar Próximo'}
                 </button>
 
                 <button

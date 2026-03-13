@@ -52,8 +52,8 @@ const UsersSection: React.FC<UsersSectionProps> = ({
         <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg lg:p-8">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Usuarios</h2>
-                    <p className="text-sm text-slate-500">Liste, edite, remova e altere privilegios administrativos.</p>
+                    <h2 className="text-2xl font-bold text-slate-900">Usuários</h2>
+                    <p className="text-sm text-slate-500">Liste, edite, remova e altere privilégios administrativos.</p>
                 </div>
                 <button
                     type="button"
@@ -70,13 +70,13 @@ const UsersSection: React.FC<UsersSectionProps> = ({
             <div className="grid gap-6">
                 <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                     <div className="mb-3 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-slate-800">Lista de usuarios</h3>
+                        <h3 className="text-lg font-bold text-slate-800">Lista de usuários</h3>
                         <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate-600">{users.length}</span>
                     </div>
 
                     <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1">
-                        {isLoadingUsers && <div className="py-6 text-center text-slate-400 italic">Carregando usuarios...</div>}
-                        {!isLoadingUsers && users.length === 0 && <div className="py-6 text-center text-slate-400 italic">Nenhum usuario encontrado.</div>}
+                        {isLoadingUsers && <div className="py-6 text-center text-slate-400 italic">Carregando usuários...</div>}
+                        {!isLoadingUsers && users.length === 0 && <div className="py-6 text-center text-slate-400 italic">Nenhum usuário encontrado.</div>}
                         {users.map((user) => (
                             <div
                                 key={user.id}
@@ -129,8 +129,8 @@ const UsersSection: React.FC<UsersSectionProps> = ({
 
                 <form onSubmit={(event) => void onSaveUser(event)} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="mb-5">
-                        <h3 className="text-lg font-bold text-slate-800">Edicao de usuario</h3>
-                        <p className="text-sm text-slate-500">Selecione um usuario na lista para editar os dados.</p>
+                        <h3 className="text-lg font-bold text-slate-800">Edição de usuário</h3>
+                        <p className="text-sm text-slate-500">Selecione um usuário na lista para editar os dados.</p>
                     </div>
 
                     {selectedUser ? (
@@ -173,7 +173,7 @@ const UsersSection: React.FC<UsersSectionProps> = ({
                                     onChange={(e) => onActiveChange(e.target.checked)}
                                     className="h-4 w-4 rounded border-slate-300"
                                 />
-                                Usuario ativo
+                                Usuário ativo
                             </label>
 
                             <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
@@ -196,12 +196,12 @@ const UsersSection: React.FC<UsersSectionProps> = ({
                                 disabled={isSavingUser}
                                 className="w-full rounded-2xl bg-primary px-5 py-4 text-base font-bold text-white shadow-md transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-slate-300"
                             >
-                                {isSavingUser ? 'Salvando alteracoes...' : 'Salvar alteracoes'}
+                                {isSavingUser ? 'Salvando alterações...' : 'Salvar alterações'}
                             </button>
                         </div>
                     ) : (
                         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-slate-400">
-                            Selecione um usuario para editar.
+                            Selecione um usuário para editar.
                         </div>
                     )}
                 </form>

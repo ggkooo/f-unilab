@@ -28,7 +28,7 @@ const formatReportTypeLabel = (value: string): string => {
 
 const formatOutcomeLabel = (value: string): string => {
     if (value === 'completed') {
-        return 'Concluido';
+        return 'Concluído';
     }
 
     if (value === 'canceled') {
@@ -36,7 +36,7 @@ const formatOutcomeLabel = (value: string): string => {
     }
 
     if (value === 'unknown') {
-        return 'Nao informado';
+        return 'Não informado';
     }
 
     return value.replace(/_/g, ' ');
@@ -83,7 +83,7 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(11);
             pdf.setTextColor(100, 116, 139);
-            pdf.text('Nenhum dado encontrado no periodo.', margin + 8, boxY + 18);
+            pdf.text('Nenhum dado encontrado no período.', margin + 8, boxY + 18);
             return boxY + 56 + 10;
         }
 
@@ -118,10 +118,10 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(22);
-    pdf.text('Relatorio de Atendimentos', margin, 14);
+    pdf.text('Relatório de Atendimentos', margin, 14);
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(10);
-    pdf.text(`Periodo: ${report.period.start_date} ate ${report.period.end_date}`, margin, 22);
+    pdf.text(`Período: ${report.period.start_date} até ${report.period.end_date}`, margin, 22);
     pdf.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, margin, 28);
 
     let cursorY = 42;
@@ -129,9 +129,9 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
     const cardWidth = (usableWidth - cardGap) / 2;
 
     drawCard(margin, cursorY, cardWidth, 24, 'Total de atendimentos', String(report.total_attendances), [37, 99, 235]);
-    drawCard(margin + cardWidth + cardGap, cursorY, cardWidth, 24, 'Tempo medio de espera', report.average_wait_time.formatted, [5, 150, 105]);
+    drawCard(margin + cardWidth + cardGap, cursorY, cardWidth, 24, 'Tempo médio de espera', report.average_wait_time.formatted, [5, 150, 105]);
     cursorY += 30;
-    drawCard(margin, cursorY, cardWidth, 24, 'Media por dia', report.average_attendances_per_day.toFixed(1), [234, 88, 12]);
+    drawCard(margin, cursorY, cardWidth, 24, 'Média por dia', report.average_attendances_per_day.toFixed(1), [234, 88, 12]);
     drawCard(margin + cardWidth + cardGap, cursorY, cardWidth, 24, 'Dias analisados', String(report.period.days), [139, 92, 246]);
     cursorY += 34;
 
@@ -155,7 +155,7 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
         pdf.setTextColor(100, 116, 139);
-        pdf.text('Nenhum dado diario encontrado no periodo.', chartX + 8, chartY + 20);
+        pdf.text('Nenhum dado diário encontrado no período.', chartX + 8, chartY + 20);
     } else {
         const barGap = 6;
         const innerWidth = chartWidth - 16;
@@ -189,7 +189,7 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         [239, 68, 68],
     ];
 
-    cursorY = drawDistributionSection('Distribuicao por tipo', typeEntries, formatReportTypeLabel, cursorY, typeColors);
+    cursorY = drawDistributionSection('Distribuição por tipo', typeEntries, formatReportTypeLabel, cursorY, typeColors);
 
     const outcomeEntries = Object.entries(report.attendances_by_outcome ?? {});
     const outcomeColors: Array<[number, number, number]> = [
@@ -204,7 +204,7 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         cursorY = 24;
     }
 
-    cursorY = drawDistributionSection('Distribuicao por desfecho', outcomeEntries, formatOutcomeLabel, cursorY, outcomeColors);
+    cursorY = drawDistributionSection('Distribuição por desfecho', outcomeEntries, formatOutcomeLabel, cursorY, outcomeColors);
 
     const footerY = pageHeight - 10;
     pdf.setDrawColor(226, 232, 240);
@@ -212,7 +212,7 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(9);
     pdf.setTextColor(100, 116, 139);
-    pdf.text('UNILAB Totem Relatorio administrativo gerado automaticamente', margin, footerY);
+    pdf.text('UNILAB Totem Relatório administrativo gerado automaticamente', margin, footerY);
 
     pdf.save(`relatorio-atendimentos-${report.period.start_date}-${report.period.end_date}.pdf`);
 };

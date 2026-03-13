@@ -10,7 +10,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({ history }) => {
     return (
         <div className="bg-white rounded-[2rem] shadow-md border border-slate-100 flex flex-col overflow-hidden max-h-[40vh]">
             <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
-                <h3 className="text-xl font-bold text-slate-700">Historico</h3>
+                <h3 className="text-xl font-bold text-slate-700">Histórico</h3>
             </div>
             <div className="overflow-y-auto p-4 flex flex-col gap-3">
                 {history.map((ticket) => {
@@ -28,13 +28,13 @@ const HistorySection: React.FC<HistorySectionProps> = ({ history }) => {
                             </span>
                             <span
                                 className="text-[11px] font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-600 whitespace-nowrap"
-                                title="Tempo total (criacao ate conclusao)"
+                                title="Tempo total (criação até conclusão)"
                             >
                                 {durationLabel}
                             </span>
                             <span
                                 className="text-[11px] font-semibold px-2 py-1 rounded-full bg-blue-50 text-blue-700 whitespace-nowrap"
-                                title="Guiche do atendimento"
+                                title="Guichê do atendimento"
                             >
                                 {formatCounterLabel(ticket.counterName)}
                             </span>
@@ -46,7 +46,7 @@ const HistorySection: React.FC<HistorySectionProps> = ({ history }) => {
                 })}
 
                 {history.length === 0 && (
-                    <div className="text-center text-slate-400 py-4 italic">Nenhum historico</div>
+                    <div className="text-center text-slate-400 py-4 italic">Nenhum histórico</div>
                 )}
             </div>
         </div>

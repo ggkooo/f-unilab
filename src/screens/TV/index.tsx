@@ -78,7 +78,7 @@ const Tv = () => {
                 return previousIndex >= nextVideos.length ? 0 : previousIndex;
             });
         } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao carregar os videos da TV.');
+            setVideosError(error instanceof Error ? error.message : 'Falha ao carregar os vídeos da TV.');
             setVideos((previousVideos) => {
                 if (previousVideos.length === 0) {
                     return previousVideos;
@@ -137,7 +137,7 @@ const Tv = () => {
                     return;
                 }
 
-                setVideosError(error instanceof Error ? error.message : 'Falha ao carregar o video atual.');
+                setVideosError(error instanceof Error ? error.message : 'Falha ao carregar o vídeo atual.');
                 setVideoSource(null);
             }
         };

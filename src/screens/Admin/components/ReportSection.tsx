@@ -23,8 +23,8 @@ const ReportSection: React.FC<ReportSectionProps> = ({
 }) => {
     return (
         <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg lg:p-8">
-            <h2 className="text-2xl font-bold text-slate-900">Exportacao de dados</h2>
-            <p className="mt-2 text-sm text-slate-500">Informe um periodo para gerar e baixar o PDF com as informacoes.</p>
+            <h2 className="text-2xl font-bold text-slate-900">Exportação de dados</h2>
+            <p className="mt-2 text-sm text-slate-500">Informe um período para gerar e baixar o PDF com as informações.</p>
 
             {reportError && <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{reportError}</div>}
             {reportSuccess && <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{reportSuccess}</div>}
@@ -55,7 +55,7 @@ const ReportSection: React.FC<ReportSectionProps> = ({
                     disabled={isDownloadingReport}
                     className="w-full rounded-2xl bg-slate-900 px-5 py-4 text-base font-bold text-white shadow-md transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
-                    {isDownloadingReport ? 'Gerando PDF...' : 'Baixar PDF do periodo'}
+                    {isDownloadingReport ? 'Gerando PDF...' : 'Baixar PDF do período'}
                 </button>
             </form>
         </section>

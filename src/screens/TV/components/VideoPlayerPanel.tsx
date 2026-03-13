@@ -27,7 +27,7 @@ const VideoPlayerPanel = ({ video, videoSource, error, videoRef, onVideoEnded }:
                         onEnded={onVideoEnded}
                     />
                 ) : (
-                    <span className="text-slate-400 text-xl">Nenhum video disponivel</span>
+                    <span className="text-slate-400 text-xl">Nenhum vídeo disponível</span>
                 )}
             </div>
         </div>

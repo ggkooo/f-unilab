@@ -22,7 +22,7 @@ const ServiceOptionsGrid: React.FC<ServiceOptionsGridProps> = ({
                     <ActionCard
                         icon={service.icon}
                         title={service.title}
-                        subtitle={isSubmitting && selectedService === service.title ? 'Enviando solicitacao...' : service.subtitle}
+                        subtitle={isSubmitting && selectedService === service.title ? 'Enviando solicitação...' : service.subtitle}
                         variant={service.variant}
                         badges={service.badges}
                         onClick={() => onSelectService(service.title)}

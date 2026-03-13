@@ -69,16 +69,16 @@ export const getDurationLabel = (startDate: Date, endDate: Date): string => {
 
 export const formatCounterLabel = (counterName?: string): string => {
     if (!counterName) {
-        return 'Guiche';
+        return 'Guichê';
     }
 
     const normalized = counterName.trim();
 
     if (normalized.length === 0) {
-        return 'Guiche';
+        return 'Guichê';
     }
 
-    return normalized.replace(/_/g, ' ').replace(/^guiche\b/i, 'Guiche');
+    return normalized.replace(/_/g, ' ').replace(/^guiche\b/i, 'Guichê');
 };
 
 export const getQueueSignature = (tickets: Ticket[]): string => {

@@ -10,7 +10,7 @@ const AttendantTopBar: React.FC<AttendantTopBarProps> = ({ loggedCounter, queueL
     return (
         <div className="bg-white rounded-3xl shadow-md px-4 py-5 lg:px-5 border border-slate-100 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-                <label className="text-slate-600 font-semibold">Meu Guiche:</label>
+                <label className="text-slate-600 font-semibold">Meu Guichê:</label>
                 <span className="inline-flex items-center rounded-xl bg-slate-100 px-4 py-2 text-base font-bold text-slate-700 border border-slate-200">
                     {loggedCounter}
                 </span>

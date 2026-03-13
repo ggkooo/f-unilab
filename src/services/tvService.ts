@@ -79,14 +79,14 @@ const request = async (path: string, init: RequestInit = {}, fallbackMessage: st
         return response;
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('A requisicao da TV demorou demais. Tente novamente.');
+            throw new Error('A requisição da TV demorou demais. Tente novamente.');
         }
 
         if (error instanceof Error) {
             throw error;
         }
 
-        throw new Error('Falha de comunicacao com a API da TV.');
+        throw new Error('Falha de comunicação com a API da TV.');
     } finally {
         timeout.clear();
     }
@@ -109,7 +109,7 @@ const mapVideo = (video: ApiTvVideo): TvVideo => ({
 });
 
 export const fetchRecentlyCalledTickets = async () => {
-    const response = await request(RECENTLY_CALLED_PATH, { method: 'GET' }, 'Nao foi possivel carregar as senhas chamadas.');
+    const response = await request(RECENTLY_CALLED_PATH, { method: 'GET' }, 'Não foi possível carregar as senhas chamadas.');
     const data: unknown = await response.json();
 
     if (!Array.isArray(data)) {
@@ -120,7 +120,7 @@ export const fetchRecentlyCalledTickets = async () => {
 };
 
 export const fetchTvVideos = async () => {
-    const response = await request(VIDEOS_PATH, { method: 'GET' }, 'Nao foi possivel carregar os videos da TV.');
+    const response = await request(VIDEOS_PATH, { method: 'GET' }, 'Não foi possível carregar os vídeos da TV.');
     const data: unknown = await response.json();
 
     if (!Array.isArray(data)) {
@@ -134,7 +134,7 @@ export const fetchTvVideoBlob = async (filename: string) => {
     const response = await request(
         `${VIDEOS_PATH}/${encodeURIComponent(filename)}`,
         { method: 'GET' },
-        'Nao foi possivel carregar o video selecionado.',
+        'Não foi possível carregar o vídeo selecionado.',
     );
 
     return response.blob();

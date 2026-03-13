@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { clearAuthSession, getAccessToken, getAuthSession } from '../../auth/session';
 import {
+    cancelTicket,
     callTicket,
     completeTicket,
     fetchCompletedTickets,
     fetchWaitingTickets,
+    recallTicket,
 } from '../../services/attendantService';
 import AttendantTopBar from './components/AttendantTopBar';
 import CurrentAttendanceCard from './components/CurrentAttendanceCard';
@@ -23,14 +25,16 @@ const Attendant: React.FC = () => {
     const [selectedType, setSelectedType] = useState<string>(ALL_SERVICE_TYPES);
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
     const [callingTicketId, setCallingTicketId] = useState<string | null>(null);
+    const [isRecallingCurrentTicket, setIsRecallingCurrentTicket] = useState(false);
     const [isCompletingCurrentTicket, setIsCompletingCurrentTicket] = useState(false);
+    const [isCancellingCurrentTicket, setIsCancellingCurrentTicket] = useState(false);
     const [clockTick, setClockTick] = useState(0);
 
-    const loggedCounter = getAuthSession()?.data?.user?.login ?? 'Guiche nao identificado';
+    const loggedCounter = getAuthSession()?.data?.user?.login ?? 'Guichê não identificado';
 
     const serviceTypeOptions = useMemo(
         () => [
-            { label: 'Proxima Senha (Qualquer)', value: ALL_SERVICE_TYPES },
+            { label: 'Próxima Senha (Qualquer)', value: ALL_SERVICE_TYPES },
             ...Array.from(new Set(queue.map((ticket) => ticket.serviceType))).map((serviceType) => ({
                 label: serviceType,
                 value: serviceType,
@@ -40,8 +44,15 @@ const Attendant: React.FC = () => {
     );
 
     const refreshCompletedHistory = async () => {
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+            setHistory((prev) => (prev.length === 0 ? prev : []));
+            return;
+        }
+
         try {
-            const completedTickets = await fetchCompletedTickets(loggedCounter);
+            const completedTickets = await fetchCompletedTickets(loggedCounter, accessToken);
 
             setHistory((prev) => {
                 const previousSignature = getHistorySignature(prev);
@@ -108,14 +119,14 @@ const Attendant: React.FC = () => {
         const accessToken = getAccessToken();
 
         if (!accessToken) {
-            alert('Sua sessao expirou. Faca login novamente.');
+            alert('Sua sessão expirou. Faça login novamente.');
             return;
         }
 
         const selectedTicket = queue[ticketIndex];
 
         if (!selectedTicket) {
-            alert('Senha selecionada nao esta mais na fila.');
+            alert('Senha selecionada não está mais na fila.');
             return;
         }
 
@@ -149,7 +160,7 @@ const Attendant: React.FC = () => {
 
     const handleCallSpecificTicket = async (ticketId: string) => {
         const ticketIndex = queue.findIndex((ticket) => ticket.id === ticketId);
-        await callTicketAtIndex(ticketIndex, 'Senha selecionada nao esta mais na fila.');
+        await callTicketAtIndex(ticketIndex, 'Senha selecionada não está mais na fila.');
     };
 
     const handleCompleteCurrentTicket = async () => {
@@ -161,7 +172,7 @@ const Attendant: React.FC = () => {
         const accessToken = getAccessToken();
 
         if (!accessToken) {
-            alert('Sua sessao expirou. Faca login novamente.');
+            alert('Sua sessão expirou. Faça login novamente.');
             return;
         }
 
@@ -176,6 +187,58 @@ const Attendant: React.FC = () => {
             alert('Falha ao concluir a senha. Tente novamente.');
         } finally {
             setIsCompletingCurrentTicket(false);
+        }
+    };
+
+    const handleRecallCurrentTicket = async () => {
+        if (!currentTicket) {
+            alert('Nenhuma senha em atendimento para repetir.');
+            return;
+        }
+
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+            alert('Sua sessão expirou. Faça login novamente.');
+            return;
+        }
+
+        setIsRecallingCurrentTicket(true);
+
+        try {
+            await recallTicket(currentTicket.id, accessToken);
+        } catch (error) {
+            console.error(error);
+            alert('Falha ao repetir a chamada da senha. Tente novamente.');
+        } finally {
+            setIsRecallingCurrentTicket(false);
+        }
+    };
+
+    const handleCancelCurrentTicket = async () => {
+        if (!currentTicket) {
+            alert('Nenhuma senha em atendimento para cancelar.');
+            return;
+        }
+
+        const accessToken = getAccessToken();
+
+        if (!accessToken) {
+            alert('Sua sessão expirou. Faça login novamente.');
+            return;
+        }
+
+        setIsCancellingCurrentTicket(true);
+
+        try {
+            await cancelTicket(currentTicket.id, accessToken);
+            setCurrentTicket(null);
+            await refreshQueue();
+        } catch (error) {
+            console.error(error);
+            alert('Falha ao cancelar a senha. Tente novamente.');
+        } finally {
+            setIsCancellingCurrentTicket(false);
         }
     };
 
@@ -196,10 +259,14 @@ const Attendant: React.FC = () => {
                         serviceTypeOptions={serviceTypeOptions}
                         isLoadingQueue={isLoadingQueue}
                         callingTicketId={callingTicketId}
+                        isRecallingCurrentTicket={isRecallingCurrentTicket}
                         isCompletingCurrentTicket={isCompletingCurrentTicket}
+                        isCancellingCurrentTicket={isCancellingCurrentTicket}
                         onSelectedTypeChange={setSelectedType}
                         onCallNext={() => void handleCallNext()}
+                        onRecallCurrentTicket={() => void handleRecallCurrentTicket()}
                         onCompleteCurrentTicket={() => void handleCompleteCurrentTicket()}
+                        onCancelCurrentTicket={() => void handleCancelCurrentTicket()}
                         queueLength={queue.length}
                     />
                 </div>

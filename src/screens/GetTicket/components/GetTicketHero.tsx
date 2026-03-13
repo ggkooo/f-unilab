@@ -11,7 +11,7 @@ const GetTicketHero: React.FC = () => {
                 Como podemos te ajudar hoje?
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-slate-500 sm:text-lg">
-                Selecione uma opcao abaixo para iniciar seu atendimento de forma rapida.
+                Selecione uma opção abaixo para iniciar seu atendimento de forma rápida.
             </p>
         </div>
     );

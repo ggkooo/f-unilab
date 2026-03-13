@@ -4,25 +4,25 @@ export const SERVICE_OPTIONS: ServiceOption[] = [
     {
         icon: 'support_agent',
         title: 'Atendimento Normal',
-        subtitle: 'Atendimento geral para orientacoes e solicitacoes comuns.',
+        subtitle: 'Atendimento geral para orientações e solicitações comuns.',
         variant: 'primary',
     },
     {
         icon: 'priority_high',
         title: 'Atendimento Preferencial',
-        subtitle: 'Prioridade para os publicos com atendimento preferencial.',
+        subtitle: 'Prioridade para os públicos com atendimento preferencial.',
         variant: 'warning',
+        badges: [
+            { icon: 'elderly', label: '60+' },
+            { icon: 'pregnant_woman', label: 'Gestante' },
+            { icon: 'accessible', label: 'Deficiente' },
+        ],
     },
     {
         icon: 'inventory_2',
-        title: 'Entrega de Exames',
-        subtitle: 'Solicite a entrega de exames concluidos no sistema.',
+        title: 'Recebimento de Exames ou Entrega de Amostras',
+        subtitle: 'Atendimento para recebimento de exames ou entrega de amostras.',
         variant: 'success',
-    },
-    {
-        icon: 'science',
-        title: 'Recebimento de Amostras',
-        subtitle: 'Registre o recebimento de amostras para analise.',
-        variant: 'primary',
+        fullWidth: true,
     },
 ];

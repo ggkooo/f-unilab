@@ -1,58 +1,64 @@
 # UniLab Frontend Totem
 
-Aplicacao frontend do sistema de senhas e atendimento da UniLab.
+Frontend application for UniLab ticketing and service operations.
 
-O projeto cobre o fluxo completo do totem, desde a emissao publica de senha ate as operacoes internas de atendimento, administracao e exibicao em TV. A base foi desenvolvida com React, TypeScript e Vite, com foco em telas modulares, services dedicados e integracao direta com a API via `X-API-KEY`.
+This project covers the full totem workflow, from public ticket generation to internal attendant/admin operations and TV display mode. The app is built with React, TypeScript, and Vite, with modular screens, dedicated service layers, and API integration using `X-API-KEY` and Bearer authentication where required.
 
-## Sumario
+## Table of Contents
 
-- Visao geral
-- Capturas da aplicacao
-- Stack e dependencias
-- Funcionalidades
-- Rotas da aplicacao
-- Estrutura do projeto
-- Requisitos
-- Configuracao do ambiente
-- Variaveis de ambiente
-- Execucao local
-- Integracao com API
-- Autenticacao e sessao
-- Scripts disponiveis
-- Padroes de desenvolvimento
+- Overview
+- Screenshots
+- Tech Stack
+- Features
+- Routes
+- Project Structure
+- Requirements
+- Environment Setup
+- Environment Variables
+- Run Locally
+- API Integration
+- Authentication and Session
+- Deployment (Nginx Example)
+- Available Scripts
 - Troubleshooting
 
-## Visao geral
+## Overview
 
-Fluxos implementados atualmente:
+Implemented flows:
 
-- Tela publica para emissao de senha por tipo de servico.
-- Tela de login para operadores e administradores.
-- Painel de atendente com fila, senha atual, historico e acoes de chamada/conclusao.
-- Painel administrativo para usuarios, videos e relatorios.
-- Tela de TV para exibicao da senha chamada, ultimas chamadas e playlist de videos.
+- Public screen for ticket generation by service type.
+- Login screen for attendants and admins.
+- Attendant panel with queue, current ticket, history, and call/recall/complete/cancel actions.
+- Admin panel for users, videos, and attendance reports.
+- TV panel to display current call, recent calls, and video playlist.
 
-O frontend utiliza polling para manter as telas operacionais sincronizadas com o backend e possui uma separacao clara entre componentes visuais, regras de tela, utilitarios e camada de servicos.
+The frontend uses polling to keep operational screens synchronized with the backend and keeps a clear separation between UI components, screen logic, utilities, and service integrations.
 
-## Capturas da aplicacao
+## Screenshots
 
-### Tela publica
+### Public Ticket Screen
 
-![Tela publica do totem](README-images/ipad.png)
+![Public ticket screen](README-images/home-page.png)
 
-### Painel de atendimento
+### Attendant Panel
 
-![Painel de atendimento](README-images/attendent.png)
+![Attendant panel](README-images/attendent-page.png)
 
-### Painel administrativo
+### Admin Panel
 
-![Painel administrativo](README-images/admin.png)
+![Admin panel](README-images/admin-page.png)
 
-### Tela de TV
+### TV Screen
 
-![Tela de TV](README-images/tv.png)
+![TV screen](README-images/tv-page.png)
 
-## Stack e dependencias
+### Report Examples
+
+![Report example 1](README-images/report-001.png)
+![Report example 2](README-images/report-002.png)
+![Report example 3](README-images/report-003.png)
+
+## Tech Stack
 
 - React 19
 - TypeScript 5
@@ -60,193 +66,157 @@ O frontend utiliza polling para manter as telas operacionais sincronizadas com o
 - React Router DOM 7
 - ESLint 9
 - jsPDF
-- Tailwind CSS via CDN no `index.html`
+- Tailwind CSS via CDN in `index.html`
 - Google Material Icons Outlined
 
-## Funcionalidades
+## Features
 
-### Emissao de senha
+### Ticket Generation
 
-- Seleciona o tipo de atendimento.
-- Envia a criacao da senha para a API.
-- Exibe feedback visual de sucesso e erro.
+- Select service type.
+- Send ticket creation request to the API.
+- Show success/error feedback.
 
-### Login e sessao
+### Login and Session
 
-- Autenticacao por login e senha.
-- Persistencia da sessao no `sessionStorage`.
-- Redirecionamento automatico para rotas protegidas.
+- Username/password authentication.
+- Session persistence in `sessionStorage`.
+- Automatic redirect to protected routes.
 
-### Painel de atendente
+### Attendant Panel
 
-- Lista fila de espera em tempo real.
-- Permite chamar a proxima senha de qualquer tipo ou de um tipo especifico.
-- Exibe atendimento atual.
-- Conclui atendimento atual.
-- Mantem historico recente de atendimentos concluidos.
+- Real-time waiting queue.
+- Call next ticket from any type or specific type.
+- Display current ticket in attendance.
+- Recall current ticket.
+- Complete current ticket.
+- Cancel current ticket.
+- Display recent completed history.
 
-### Painel administrativo
+### Admin Panel
 
-- Lista usuarios cadastrados.
-- Atualiza dados de usuario.
-- Remove usuarios.
-- Promove ou remove privilegios administrativos.
-- Lista e remove videos cadastrados.
-- Envia novos videos para a API.
-- Gera relatorio de atendimentos por periodo.
+- List users.
+- Update user data.
+- Delete users.
+- Promote/demote admin privileges.
+- List/delete videos.
+- Upload new videos.
+- Generate attendance reports by date range.
 
-### Tela de TV
+### TV Screen
 
-- Exibe a senha atualmente chamada.
-- Exibe historico recente de chamadas.
-- Busca playlist de videos na API.
-- Carrega o arquivo do video por `GET /videos/{filename}` com `X-API-KEY`.
-- Reproduz o video com rotacao automatica entre itens da playlist.
+- Display currently called ticket.
+- Display recent calls.
+- Fetch video playlist from API.
+- Load video binary via `GET /videos/{filename}` with `X-API-KEY`.
+- Rotate videos automatically.
 
-## Rotas da aplicacao
+## Routes
 
-As rotas atuais estao definidas em `src/App.tsx`:
+Current routes are defined in `src/App.tsx`:
 
-- `/`: tela publica de emissao de senha.
-- `/tv`: tela de exibicao da TV.
-- `/login`: tela de autenticacao.
-- `/attendent`: tela protegida do atendente.
-- `/admin`: tela protegida de administracao.
+- `/`: public ticket generation screen.
+- `/tv`: TV display screen.
+- `/login`: authentication screen.
+- `/attendent`: protected attendant screen.
+- `/admin`: protected admin screen.
 
-## Estrutura do projeto
+## Project Structure
 
 ```text
 .
 |-- README-images/
-|-- README.md
-|-- package.json
+|-- public/
+|   |-- manifest.json
+|   |-- assets/img/icons/
 |-- src/
+|   |-- auth/
+|   |-- components/
+|   |-- screens/
+|   |-- services/
 |   |-- App.tsx
 |   |-- main.tsx
-|   |-- auth/
-|   |   |-- session.ts
-|   |-- components/
-|   |   |-- auth/
-|   |   |   |-- ProtectedRoute.tsx
-|   |   |-- layout/
-|   |   |   |-- Footer/index.tsx
-|   |   |   |-- Header/index.tsx
-|   |   |   |-- Layout/index.tsx
-|   |   |-- ui/
-|   |       |-- ActionCard/index.tsx
-|   |       |-- Badges/index.tsx
-|   |       |-- Clock/index.tsx
-|   |       |-- CustomSelect/index.tsx
-|   |-- screens/
-|   |   |-- Admin/
-|   |   |   |-- components/
-|   |   |   |-- index.tsx
-|   |   |   |-- reportPdf.ts
-|   |   |   |-- types.ts
-|   |   |   |-- utils.ts
-|   |   |-- Attendent/
-|   |   |   |-- components/
-|   |   |   |-- index.tsx
-|   |   |   |-- types.ts
-|   |   |   |-- utils.ts
-|   |   |-- GetTicket/
-|   |   |   |-- components/
-|   |   |   |-- constants.ts
-|   |   |   |-- index.tsx
-|   |   |   |-- types.ts
-|   |   |-- Login/
-|   |   |   |-- components/
-|   |   |   |-- index.tsx
-|   |   |-- TV/
-|   |       |-- components/
-|   |       |-- index.tsx
-|   |       |-- types.ts
-|   |       |-- utils.ts
-|   |-- services/
-|       |-- adminService.ts
-|       |-- apiConfig.ts
-|       |-- attendantService.ts
-|       |-- authService.ts
-|       |-- ticketService.ts
-|       |-- tvService.ts
+|-- .env.example
+|-- index.html
+|-- package.json
+|-- README.md
 ```
 
-## Requisitos
+## Requirements
 
 - Node.js 20+
 - npm 10+
-- Backend da API UniLab em execucao
+- UniLab backend API running
 
-## Configuracao do ambiente
+## Environment Setup
 
-1. Instale as dependencias:
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Crie o arquivo `.env` a partir do exemplo:
+2. Create `.env` from the example:
 
 ```bash
 cp .env.example .env
 ```
 
-No Windows PowerShell:
+PowerShell alternative:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-3. Ajuste os valores do ambiente conforme sua API.
+3. Update environment values for your API.
 
-## Variaveis de ambiente
+## Environment Variables
 
-Variaveis principais documentadas em `.env.example`:
+Variables documented in `.env.example`:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api
 VITE_API_TICKETS_PATH=/tickets
+VITE_USERS_PATH=/users
+VITE_VIDEOS_PATH=/videos
+VITE_VIDEOS_UPLOAD_PATH=/videos/upload
+VITE_REPORT_PDF_PATH=/reports/attendances
+VITE_TV_RECENTLY_CALLED_PATH=/tickets/recently-called
 VITE_API_KEY=your-api-key-here
 VITE_API_TIMEOUT_MS=10000
 ```
 
-Descricao:
+Description:
 
-- `VITE_API_BASE_URL`: URL base da API.
-- `VITE_API_TICKETS_PATH`: path base do recurso de senhas.
-- `VITE_API_KEY`: chave enviada no header `X-API-KEY`.
-- `VITE_API_TIMEOUT_MS`: timeout padrao das requisicoes.
+- `VITE_API_BASE_URL`: API base URL.
+- `VITE_API_TICKETS_PATH`: base path for ticket resource.
+- `VITE_USERS_PATH`: users resource path.
+- `VITE_VIDEOS_PATH`: videos resource path.
+- `VITE_VIDEOS_UPLOAD_PATH`: video upload path.
+- `VITE_REPORT_PDF_PATH`: attendance report path.
+- `VITE_TV_RECENTLY_CALLED_PATH`: TV recent calls path.
+- `VITE_API_KEY`: key sent in `X-API-KEY` header.
+- `VITE_API_TIMEOUT_MS`: request timeout in milliseconds.
 
-Variaveis opcionais utilizadas por modulos especificos:
+## Run Locally
 
-- `VITE_USERS_ENDPOINT`
-- `VITE_VIDEOS_ENDPOINT`
-- `VITE_VIDEOS_UPLOAD_ENDPOINT`
-- `VITE_REPORT_PDF_ENDPOINT`
-- `VITE_TV_RECENTLY_CALLED_PATH`
-- `VITE_VIDEOS_PATH`
-
-Quando essas variaveis nao sao definidas, os services utilizam defaults apontando para o backend local.
-
-## Execucao local
-
-Ambiente de desenvolvimento:
+Development:
 
 ```bash
 npm run dev
 ```
 
-URL padrao do Vite:
+Default Vite URL:
 
 - `http://localhost:5173`
 
-Build de producao:
+Production build:
 
 ```bash
 npm run build
 ```
 
-Preview do build:
+Build preview:
 
 ```bash
 npm run preview
@@ -258,39 +228,31 @@ Lint:
 npm run lint
 ```
 
-## Integracao com API
+## API Integration
 
-### Configuracao central
+### Central Configuration
 
-Arquivo principal: `src/services/apiConfig.ts`
+Main file: `src/services/apiConfig.ts`
 
-Responsabilidades:
+Responsibilities:
 
-- normalizar URL base e paths,
-- centralizar `baseUrl`, `ticketsPath`, `apiKey` e `timeoutMs`,
-- gerar URLs finais para os services.
+- normalize base URL and resource paths,
+- centralize `baseUrl`, `ticketsPath`, `apiKey`, and `timeoutMs`,
+- build final API URLs for service modules.
 
-### Emissao de senha
+### Ticket Creation
 
-Arquivo: `src/services/ticketService.ts`
+File: `src/services/ticketService.ts`
 
-Operacao:
+Operation:
 
 - `POST {baseUrl}{ticketsPath}`
 
-Payload esperado:
+### Authentication
 
-```json
-{
-  "service_type": "Atendimento Normal"
-}
-```
+File: `src/services/authService.ts`
 
-### Autenticacao
-
-Arquivo: `src/services/authService.ts`
-
-Operacao:
+Operation:
 
 - `POST {baseUrl}/login`
 
@@ -299,100 +261,152 @@ Headers:
 - `Content-Type: application/json`
 - `X-API-KEY: <VITE_API_KEY>`
 
-### Atendimento
+### Attendant Operations
 
-Arquivo: `src/services/attendantService.ts`
+File: `src/services/attendantService.ts`
 
-Operacoes:
+Operations:
 
 - `GET {baseUrl}{ticketsPath}`
 - `GET {baseUrl}{ticketsPath}/completed`
 - `POST {baseUrl}{ticketsPath}/{id}/call`
+- `POST {baseUrl}{ticketsPath}/{id}/recall`
 - `PATCH {baseUrl}{ticketsPath}/{id}/complete`
+- `PATCH {baseUrl}{ticketsPath}/{id}/cancel`
 
-### Administracao
+Protected attendant routes send both headers:
 
-Arquivo: `src/services/adminService.ts`
+- `X-API-KEY`
+- `Authorization: Bearer <access_token>`
 
-Operacoes:
+### Admin Operations
 
-- gestao de usuarios,
-- upload e remocao de videos,
-- geracao de relatorios,
-- troca de privilegios administrativos.
+File: `src/services/adminService.ts`
 
-### TV
+Includes user management, video upload/removal, and report generation.
 
-Arquivo: `src/services/tvService.ts`
+### TV Operations
 
-Operacoes:
+File: `src/services/tvService.ts`
+
+Operations:
 
 - `GET /tickets/recently-called`
 - `GET /videos`
 - `GET /videos/{filename}`
 
-Observacao importante:
+Important:
 
-- a tela de TV carrega o arquivo do video via `fetch` para garantir envio do header `X-API-KEY` em todas as consultas a API.
+- TV video binary is fetched manually to ensure `X-API-KEY` is sent with the request.
 
-## Autenticacao e sessao
+## Authentication and Session
 
-Arquivos principais:
+Main files:
 
 - `src/auth/session.ts`
 - `src/components/auth/ProtectedRoute.tsx`
 
-Comportamento atual:
+Current behavior:
 
-- a sessao e persistida no `sessionStorage` com a chave `totem_auth`,
-- `ProtectedRoute` exige `access_token` para liberar rotas protegidas,
-- quando `requireAdmin` e informado, usuarios sem perfil admin sao redirecionados para `/attendent`.
+- session is stored in `sessionStorage` under `totem_auth`,
+- protected routes require `access_token`,
+- when `requireAdmin` is set, non-admin users are redirected to `/attendent`.
 
-Campos esperados na sessao:
+Expected session fields:
 
 - `data.access_token`
 - `data.user.login`
 - `data.user.is_admin`
 
-## Scripts disponiveis
+## Deployment (Nginx Example)
 
-- `npm run dev`: sobe o ambiente de desenvolvimento.
-- `npm run build`: executa type-check e build de producao.
-- `npm run preview`: publica o build local para validacao.
-- `npm run lint`: executa o lint do projeto.
+Example virtual host for deploying the built frontend with React Router fallback and HTTPS. Replace placeholders with your own values.
 
-## Padroes de desenvolvimento
+```nginx
+server {
+  server_name your-domain.example;
 
-- camada de integracao isolada em `src/services`,
-- componentes de interface separados por responsabilidade,
-- `types.ts` e `utils.ts` por modulo de tela,
-- tratamento explicito de timeout e falha de comunicacao,
-- polling controlado nas telas operacionais,
-- rotas protegidas centralizadas em `ProtectedRoute`.
+  root /var/www/your-app;
+  index index.html;
+
+  # Serve static files; fallback to index.html for client-side routes.
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  # Cache static assets.
+  location ~* \.(?:css|js|jpg|jpeg|gif|png|svg|ico|ttf|woff|woff2|eot)$ {
+    try_files $uri =404;
+    expires 7d;
+    add_header Cache-Control "public, max-age=604800, immutable";
+    access_log off;
+  }
+
+  # Avoid caching HTML-like responses.
+  location ~* \.(?:html|htm|json|xml|txt)$ {
+    add_header Cache-Control "no-cache, must-revalidate";
+  }
+
+  # Basic security headers.
+  add_header X-Content-Type-Options nosniff;
+  add_header X-Frame-Options SAMEORIGIN;
+  add_header X-XSS-Protection "1; mode=block";
+
+  # Gzip
+  gzip on;
+  gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+  gzip_min_length 256;
+
+  listen [::]:443 ssl;
+  listen 443 ssl;
+  ssl_certificate /etc/letsencrypt/live/your-domain.example/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/your-domain.example/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+server {
+  if ($host = your-domain.example) {
+    return 301 https://$host$request_uri;
+  }
+
+  listen 80;
+  listen [::]:80;
+  server_name your-domain.example;
+  return 404;
+}
+```
+
+## Available Scripts
+
+- `npm run dev`: start development mode.
+- `npm run build`: type-check and build for production.
+- `npm run preview`: preview the production build locally.
+- `npm run lint`: run lint rules.
 
 ## Troubleshooting
 
-### A API nao responde
+### API is not responding
 
-- confirme se o backend esta ativo,
-- revise `VITE_API_BASE_URL`,
-- valide a `VITE_API_KEY`,
-- teste os endpoints diretamente com o mesmo header `X-API-KEY`.
+- confirm backend is running,
+- verify `VITE_API_BASE_URL`,
+- verify `VITE_API_KEY`,
+- test endpoints directly with the same headers used by the app.
 
-### A tela de TV lista videos mas nao reproduz
+### TV lists videos but does not play them
 
-- confirme se o endpoint `GET /videos/{filename}` retorna o binario do arquivo,
-- valide se o header `X-API-KEY` esta sendo aceito nesse endpoint,
-- verifique se o backend retorna um arquivo de video valido.
+- confirm `GET /videos/{filename}` returns a valid binary,
+- verify `X-API-KEY` is accepted by this endpoint,
+- validate content type and file integrity from backend.
 
-### Rotas protegidas redirecionam para login
+### Protected routes redirect to login
 
-- confira a sessao em `sessionStorage`,
-- valide se o `access_token` ainda esta valido,
-- confirme se o usuario realmente possui `is_admin` quando acessa `/admin`.
+- inspect `sessionStorage` data,
+- validate token expiration,
+- confirm `is_admin` before accessing `/admin`.
 
-### O build falha
+### Build fails
 
-- execute `npm run build` para obter o erro completo,
-- confira imports e caminhos,
-- valide tipagem dos services e componentes novos.
+- run `npm run build` to inspect full output,
+- review import paths,
+- check type safety in new services/components.

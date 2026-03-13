@@ -12,11 +12,11 @@ const AdminHero: React.FC<AdminHeroProps> = ({ administratorName, loginLabel, on
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <span className="inline-flex w-fit items-center rounded-full bg-slate-100 px-4 py-1.5 text-sm font-semibold uppercase tracking-wide text-slate-600">
-                        Administracao
+                        Administração
                     </span>
                     <h1 className="mt-3 text-3xl font-bold text-slate-900 lg:text-4xl">Painel Administrativo</h1>
                     <p className="mt-2 max-w-3xl text-base text-slate-500 lg:text-lg">
-                        Gerencie usuarios, videos institucionais e exportacoes em PDF sem sair da aplicacao.
+                        Gerencie usuários, vídeos institucionais e exportações em PDF sem sair da aplicação.
                     </p>
                 </div>
 

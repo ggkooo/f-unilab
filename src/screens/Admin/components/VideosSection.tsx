@@ -33,15 +33,15 @@ const VideosSection: React.FC<VideosSectionProps> = ({
         <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg lg:p-8">
             <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Videos</h2>
-                    <p className="text-sm text-slate-500">Envie novos videos, visualize a biblioteca atual e remova arquivos.</p>
+                    <h2 className="text-2xl font-bold text-slate-900">Vídeos</h2>
+                    <p className="text-sm text-slate-500">Envie novos vídeos, visualize a biblioteca atual e remova arquivos.</p>
                 </div>
                 <button
                     type="button"
                     onClick={() => void onRefreshVideos()}
                     className="w-fit rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                 >
-                    Atualizar videos
+                    Atualizar vídeos
                 </button>
             </div>
 
@@ -50,7 +50,7 @@ const VideosSection: React.FC<VideosSectionProps> = ({
 
             <div className="grid gap-6">
                 <form onSubmit={(event) => void onUploadVideo(event)} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                    <h3 className="mb-2 text-lg font-bold text-slate-800">Upload de video</h3>
+                    <h3 className="mb-2 text-lg font-bold text-slate-800">Upload de vídeo</h3>
                     <p className="mb-4 text-sm text-slate-500">Selecione um arquivo e envie para a playlist do totem.</p>
 
                     <input
@@ -70,19 +70,19 @@ const VideosSection: React.FC<VideosSectionProps> = ({
                         disabled={isUploadingVideo}
                         className="w-full rounded-2xl bg-primary px-5 py-4 text-base font-bold text-white shadow-md transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-slate-300"
                     >
-                        {isUploadingVideo ? 'Enviando video...' : 'Enviar video'}
+                        {isUploadingVideo ? 'Enviando vídeo...' : 'Enviar vídeo'}
                     </button>
                 </form>
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-slate-800">Biblioteca de videos</h3>
+                        <h3 className="text-lg font-bold text-slate-800">Biblioteca de vídeos</h3>
                         <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate-600">{videos.length}</span>
                     </div>
 
                     <div className="max-h-[24rem] space-y-3 overflow-y-auto pr-1">
-                        {isLoadingVideos && <div className="py-6 text-center text-slate-400 italic">Carregando videos...</div>}
-                        {!isLoadingVideos && videos.length === 0 && <div className="py-6 text-center text-slate-400 italic">Nenhum video encontrado.</div>}
+                        {isLoadingVideos && <div className="py-6 text-center text-slate-400 italic">Carregando vídeos...</div>}
+                        {!isLoadingVideos && videos.length === 0 && <div className="py-6 text-center text-slate-400 italic">Nenhum vídeo encontrado.</div>}
                         {videos.map((video) => (
                             <div key={video.filename} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                 <div className="flex items-start justify-between gap-3">
@@ -107,7 +107,7 @@ const VideosSection: React.FC<VideosSectionProps> = ({
                                         rel="noreferrer"
                                         className="mt-3 inline-flex rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-white"
                                     >
-                                        Abrir video
+                                        Abrir vídeo
                                     </a>
                                 )}
                             </div>

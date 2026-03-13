@@ -1,4 +1,4 @@
-import { apiConfig } from './apiConfig';
+import { apiConfig, buildApiUrl } from './apiConfig';
 
 export interface ApiUser {
     id: number;
@@ -30,6 +30,7 @@ export interface AttendanceReportResponse {
     average_attendances_per_day: number;
     attendances_per_day: Record<string, number>;
     attendances_by_type: Record<string, number>;
+    attendances_by_outcome: Record<string, number>;
     total_attendances: number;
 }
 
@@ -41,13 +42,13 @@ export interface UpdateUserPayload {
     password?: string;
 }
 
-const API_KEY = import.meta.env.VITE_API_KEY ?? apiConfig.apiKey ?? 'e15e7aaff2ec79683370eef2fdd01ec0c2ffe94706e73cca7062e026617cc2fb';
-const USERS_ENDPOINT = import.meta.env.VITE_USERS_ENDPOINT ?? 'http://localhost:8000/api/users';
+const API_KEY = import.meta.env.VITE_API_KEY ?? apiConfig.apiKey;
+const USERS_PATH = import.meta.env.VITE_USERS_PATH ?? '/users';
 const MAKE_ADMIN_SUFFIX = '/make-admin';
 const REMOVE_ADMIN_SUFFIX = '/remove-admin';
-const VIDEOS_ENDPOINT = import.meta.env.VITE_VIDEOS_ENDPOINT ?? 'http://localhost:8000/api/videos';
-const VIDEOS_UPLOAD_ENDPOINT = import.meta.env.VITE_VIDEOS_UPLOAD_ENDPOINT ?? 'http://localhost:8000/api/videos/upload';
-const ATTENDANCE_REPORT_ENDPOINT = import.meta.env.VITE_REPORT_PDF_ENDPOINT ?? 'http://localhost:8000/api/reports/attendances';
+const VIDEOS_PATH = import.meta.env.VITE_VIDEOS_PATH ?? '/videos';
+const VIDEOS_UPLOAD_PATH = import.meta.env.VITE_VIDEOS_UPLOAD_PATH ?? '/videos/upload';
+const ATTENDANCE_REPORT_PATH = import.meta.env.VITE_REPORT_PDF_PATH ?? '/reports/attendances';
 
 type ApiErrorBody = {
     message?: string;
@@ -108,14 +109,14 @@ const request = async (url: string, init: RequestInit, fallbackMessage: string) 
         return response;
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('A requisicao demorou demais. Tente novamente.');
+            throw new Error('A requisição demorou demais. Tente novamente.');
         }
 
         if (error instanceof Error) {
             throw error;
         }
 
-        throw new Error('Falha de comunicacao com a API.');
+        throw new Error('Falha de comunicação com a API.');
     } finally {
         timeout.clear();
     }
@@ -123,12 +124,12 @@ const request = async (url: string, init: RequestInit, fallbackMessage: string) 
 
 export const fetchAdminUsers = async (accessToken?: string) => {
     const response = await request(
-        USERS_ENDPOINT,
+        buildApiUrl(USERS_PATH),
         {
             method: 'GET',
             headers: buildAuthHeaders(accessToken),
         },
-        'Nao foi possivel carregar os usuarios.',
+        'Não foi possível carregar os usuários.',
     );
 
     const data: unknown = await response.json();
@@ -137,24 +138,24 @@ export const fetchAdminUsers = async (accessToken?: string) => {
 
 export const updateAdminUser = async (userId: number, payload: UpdateUserPayload, accessToken?: string) => {
     await request(
-        `${USERS_ENDPOINT}/${userId}`,
+        buildApiUrl(`${USERS_PATH}/${userId}`),
         {
             method: 'PATCH',
             headers: buildJsonHeaders(accessToken),
             body: JSON.stringify(payload),
         },
-        'Nao foi possivel atualizar o usuario.',
+        'Não foi possível atualizar o usuário.',
     );
 };
 
 export const deleteAdminUser = async (userId: number, accessToken?: string) => {
     await request(
-        `${USERS_ENDPOINT}/${userId}`,
+        buildApiUrl(`${USERS_PATH}/${userId}`),
         {
             method: 'DELETE',
             headers: buildAuthHeaders(accessToken),
         },
-        'Nao foi possivel remover o usuario.',
+        'Não foi possível remover o usuário.',
     );
 };
 
@@ -162,23 +163,23 @@ export const toggleUserAdminRole = async (user: ApiUser, accessToken?: string) =
     const endpointSuffix = user.is_admin ? REMOVE_ADMIN_SUFFIX : MAKE_ADMIN_SUFFIX;
 
     await request(
-        `${USERS_ENDPOINT}/${user.id}${endpointSuffix}`,
+        buildApiUrl(`${USERS_PATH}/${user.id}${endpointSuffix}`),
         {
             method: 'PATCH',
             headers: buildAuthHeaders(accessToken),
         },
-        'Nao foi possivel alterar o perfil administrativo.',
+        'Não foi possível alterar o perfil administrativo.',
     );
 };
 
 export const fetchAdminVideos = async (accessToken?: string) => {
     const response = await request(
-        VIDEOS_ENDPOINT,
+        buildApiUrl(VIDEOS_PATH),
         {
             method: 'GET',
             headers: buildAuthHeaders(accessToken),
         },
-        'Nao foi possivel carregar os videos.',
+        'Não foi possível carregar os vídeos.',
     );
 
     const data: unknown = await response.json();
@@ -190,24 +191,24 @@ export const uploadAdminVideo = async (file: File, accessToken?: string) => {
     formData.append('video', file);
 
     await request(
-        VIDEOS_UPLOAD_ENDPOINT,
+        buildApiUrl(VIDEOS_UPLOAD_PATH),
         {
             method: 'POST',
             headers: buildAuthHeaders(accessToken),
             body: formData,
         },
-        'Nao foi possivel enviar o video.',
+        'Não foi possível enviar o vídeo.',
     );
 };
 
 export const deleteAdminVideo = async (filename: string, accessToken?: string) => {
     await request(
-        `${VIDEOS_ENDPOINT}/${encodeURIComponent(filename)}`,
+        buildApiUrl(`${VIDEOS_PATH}/${encodeURIComponent(filename)}`),
         {
             method: 'DELETE',
             headers: buildAuthHeaders(accessToken),
         },
-        'Nao foi possivel remover o video.',
+        'Não foi possível remover o vídeo.',
     );
 };
 
@@ -218,12 +219,12 @@ export const fetchAttendanceReport = async (startDate: string, endDate: string, 
     });
 
     const response = await request(
-        `${ATTENDANCE_REPORT_ENDPOINT}?${queryString.toString()}`,
+        `${buildApiUrl(ATTENDANCE_REPORT_PATH)}?${queryString.toString()}`,
         {
             method: 'GET',
             headers: buildAuthHeaders(accessToken),
         },
-        'Nao foi possivel gerar o relatorio do periodo informado.',
+        'Não foi possível gerar o relatório do período informado.',
     );
 
     return (await response.json()) as AttendanceReportResponse;

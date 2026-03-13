@@ -17,6 +17,22 @@ const getApiHeaders = (accessToken?: string) => ({
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
 });
 
+const getAuthorizedHeaders = (accessToken: string) => {
+    if (!apiConfig.apiKey) {
+        throw new Error('Chave de API não configurada. Defina VITE_API_KEY no ambiente.');
+    }
+
+    if (!accessToken) {
+        throw new Error('Token de acesso não informado. Faça login novamente.');
+    }
+
+    return {
+        'Content-Type': 'application/json',
+        'X-API-KEY': apiConfig.apiKey,
+        Authorization: `Bearer ${accessToken}`,
+    };
+};
+
 const mapWaitingTicket = (ticket: ApiTicket): Ticket => ({
     id: String(ticket.id),
     number: ticket.key,
@@ -50,20 +66,20 @@ const request = async (path: string, init: RequestInit = {}) => {
         });
 
         if (!response.ok) {
-            throw new Error('Falha de comunicacao com a API de atendimento.');
+            throw new Error('Falha de comunicação com a API de atendimento.');
         }
 
         return response;
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('A requisicao de atendimento demorou demais. Tente novamente.');
+            throw new Error('A requisição de atendimento demorou demais. Tente novamente.');
         }
 
         if (error instanceof Error) {
             throw error;
         }
 
-        throw new Error('Falha de comunicacao com a API de atendimento.');
+        throw new Error('Falha de comunicação com a API de atendimento.');
     } finally {
         timeout.clear();
     }
@@ -86,10 +102,10 @@ export const fetchWaitingTickets = async () => {
         .map(mapWaitingTicket);
 };
 
-export const fetchCompletedTickets = async (fallbackCounter: string) => {
+export const fetchCompletedTickets = async (fallbackCounter: string, accessToken: string) => {
     const response = await request(`${apiConfig.ticketsPath}/completed`, {
         method: 'GET',
-        headers: getApiHeaders(),
+        headers: getAuthorizedHeaders(accessToken),
     });
 
     const data: unknown = await response.json();
@@ -107,7 +123,7 @@ export const fetchCompletedTickets = async (fallbackCounter: string) => {
 export const callTicket = async (ticketId: string, counterName: string, accessToken: string) => {
     await request(`${apiConfig.ticketsPath}/${ticketId}/call`, {
         method: 'POST',
-        headers: getApiHeaders(accessToken),
+        headers: getAuthorizedHeaders(accessToken),
         body: JSON.stringify({ guiche: counterName }),
     });
 };
@@ -115,6 +131,20 @@ export const callTicket = async (ticketId: string, counterName: string, accessTo
 export const completeTicket = async (ticketId: string, accessToken: string) => {
     await request(`${apiConfig.ticketsPath}/${ticketId}/complete`, {
         method: 'PATCH',
-        headers: getApiHeaders(accessToken),
+        headers: getAuthorizedHeaders(accessToken),
+    });
+};
+
+export const cancelTicket = async (ticketId: string, accessToken: string) => {
+    await request(`${apiConfig.ticketsPath}/${ticketId}/cancel`, {
+        method: 'PATCH',
+        headers: getAuthorizedHeaders(accessToken),
+    });
+};
+
+export const recallTicket = async (ticketId: string, accessToken: string) => {
+    await request(`${apiConfig.ticketsPath}/${ticketId}/recall`, {
+        method: 'POST',
+        headers: getAuthorizedHeaders(accessToken),
     });
 };

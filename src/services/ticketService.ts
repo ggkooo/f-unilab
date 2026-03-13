@@ -29,7 +29,7 @@ const getErrorMessage = async (response: Response) => {
         // Ignore parse errors and fallback to default message.
     }
 
-    return 'Nao foi possivel abrir o atendimento. Tente novamente.';
+    return 'Não foi possível abrir o atendimento. Tente novamente.';
 };
 
 export const createTicket = async ({ serviceType }: CreateTicketInput) => {
@@ -53,14 +53,14 @@ export const createTicket = async ({ serviceType }: CreateTicketInput) => {
         }
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-            throw new Error('A requisicao demorou demais. Tente novamente.');
+            throw new Error('A requisição demorou demais. Tente novamente.');
         }
 
         if (error instanceof Error) {
             throw error;
         }
 
-        throw new Error('Falha de comunicacao com a API.');
+        throw new Error('Falha de comunicação com a API.');
     } finally {
         timeout.clear();
     }

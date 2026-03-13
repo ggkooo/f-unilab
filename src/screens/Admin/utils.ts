@@ -1,5 +1,5 @@
 export const formatLoginLabel = (value: string): string => {
-    return value.replace(/_/g, ' ').replace(/^guiche\b/i, 'Guiche');
+    return value.replace(/_/g, ' ').replace(/^guiche\b/i, 'Guichê');
 };
 
 export const formatDateTime = (value?: string): string => {

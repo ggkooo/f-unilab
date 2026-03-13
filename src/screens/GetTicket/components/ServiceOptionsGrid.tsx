@@ -18,14 +18,16 @@ const ServiceOptionsGrid: React.FC<ServiceOptionsGridProps> = ({
     return (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
             {options.map((service) => (
-                <ActionCard
-                    key={service.title}
-                    icon={service.icon}
-                    title={service.title}
-                    subtitle={isSubmitting && selectedService === service.title ? 'Enviando solicitacao...' : service.subtitle}
-                    variant={service.variant}
-                    onClick={() => onSelectService(service.title)}
-                />
+                <div key={service.title} className={service.fullWidth ? 'sm:col-span-2' : undefined}>
+                    <ActionCard
+                        icon={service.icon}
+                        title={service.title}
+                        subtitle={isSubmitting && selectedService === service.title ? 'Enviando solicitação...' : service.subtitle}
+                        variant={service.variant}
+                        badges={service.badges}
+                        onClick={() => onSelectService(service.title)}
+                    />
+                </div>
             ))}
         </div>
     );

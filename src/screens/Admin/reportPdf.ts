@@ -26,6 +26,22 @@ const formatReportTypeLabel = (value: string): string => {
     return value.replace(/_/g, ' ');
 };
 
+const formatOutcomeLabel = (value: string): string => {
+    if (value === 'completed') {
+        return 'Concluido';
+    }
+
+    if (value === 'canceled') {
+        return 'Cancelado';
+    }
+
+    if (value === 'unknown') {
+        return 'Nao informado';
+    }
+
+    return value.replace(/_/g, ' ');
+};
+
 export const createAttendanceReportPdf = (report: AttendanceReportResponse): void => {
     const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -45,6 +61,56 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         pdf.setFontSize(18);
         pdf.setTextColor(15, 23, 42);
         pdf.text(value, x + 8, y + 18);
+    };
+
+    const drawDistributionSection = (
+        title: string,
+        entries: Array<[string, number]>,
+        labelFormatter: (value: string) => string,
+        y: number,
+        colors: Array<[number, number, number]>,
+    ) => {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(15, 23, 42);
+        pdf.text(title, margin, y);
+
+        const boxY = y + 8;
+        pdf.setDrawColor(226, 232, 240);
+        pdf.roundedRect(margin, boxY, usableWidth, 56, 4, 4);
+
+        if (entries.length === 0) {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(11);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Nenhum dado encontrado no periodo.', margin + 8, boxY + 18);
+            return boxY + 56 + 10;
+        }
+
+        const maxValue = Math.max(1, ...entries.map(([, value]) => value));
+        let rowY = boxY + 12;
+
+        entries.forEach(([key, value], index) => {
+            const color = colors[index % colors.length];
+            const label = labelFormatter(key);
+            const barMaxWidth = usableWidth - 78;
+            const barWidth = (value / maxValue) * barMaxWidth;
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10);
+            pdf.setTextColor(51, 65, 85);
+            pdf.text(label, margin + 8, rowY);
+            pdf.setFillColor(241, 245, 249);
+            pdf.roundedRect(margin + 38, rowY - 4, barMaxWidth, 6, 2, 2, 'F');
+            pdf.setFillColor(color[0], color[1], color[2]);
+            pdf.roundedRect(margin + 38, rowY - 4, Math.max(4, barWidth), 6, 2, 2, 'F');
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(15, 23, 42);
+            pdf.text(String(value), margin + 38 + barMaxWidth + 6, rowY);
+            rowY += 14;
+        });
+
+        return boxY + 56 + 10;
     };
 
     pdf.setFillColor(15, 23, 42);
@@ -115,12 +181,6 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
     }
 
     cursorY = chartY + chartHeight + 12;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(14);
-    pdf.setTextColor(15, 23, 42);
-    pdf.text('Distribuicao por tipo', margin, cursorY);
-    cursorY += 8;
-
     const typeEntries = Object.entries(report.attendances_by_type);
     const typeColors: Array<[number, number, number]> = [
         [245, 158, 11],
@@ -129,38 +189,22 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         [239, 68, 68],
     ];
 
-    pdf.setDrawColor(226, 232, 240);
-    pdf.roundedRect(margin, cursorY, usableWidth, 56, 4, 4);
+    cursorY = drawDistributionSection('Distribuicao por tipo', typeEntries, formatReportTypeLabel, cursorY, typeColors);
 
-    if (typeEntries.length === 0) {
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(11);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text('Nenhum dado por tipo encontrado no periodo.', margin + 8, cursorY + 18);
-    } else {
-        const maxTypeValue = Math.max(1, ...typeEntries.map(([, value]) => value));
-        let rowY = cursorY + 12;
+    const outcomeEntries = Object.entries(report.attendances_by_outcome ?? {});
+    const outcomeColors: Array<[number, number, number]> = [
+        [16, 185, 129],
+        [244, 63, 94],
+        [100, 116, 139],
+        [59, 130, 246],
+    ];
 
-        typeEntries.forEach(([type, value], index) => {
-            const color = typeColors[index % typeColors.length];
-            const label = formatReportTypeLabel(type);
-            const barMaxWidth = usableWidth - 78;
-            const barWidth = (value / maxTypeValue) * barMaxWidth;
-
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(10);
-            pdf.setTextColor(51, 65, 85);
-            pdf.text(label, margin + 8, rowY);
-            pdf.setFillColor(241, 245, 249);
-            pdf.roundedRect(margin + 38, rowY - 4, barMaxWidth, 6, 2, 2, 'F');
-            pdf.setFillColor(color[0], color[1], color[2]);
-            pdf.roundedRect(margin + 38, rowY - 4, Math.max(4, barWidth), 6, 2, 2, 'F');
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(15, 23, 42);
-            pdf.text(String(value), margin + 38 + barMaxWidth + 6, rowY);
-            rowY += 14;
-        });
+    if (cursorY + 74 > pageHeight - 18) {
+        pdf.addPage();
+        cursorY = 24;
     }
+
+    cursorY = drawDistributionSection('Distribuicao por desfecho', outcomeEntries, formatOutcomeLabel, cursorY, outcomeColors);
 
     const footerY = pageHeight - 10;
     pdf.setDrawColor(226, 232, 240);

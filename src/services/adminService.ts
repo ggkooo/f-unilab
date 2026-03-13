@@ -30,6 +30,7 @@ export interface AttendanceReportResponse {
     average_attendances_per_day: number;
     attendances_per_day: Record<string, number>;
     attendances_by_type: Record<string, number>;
+    attendances_by_outcome: Record<string, number>;
     total_attendances: number;
 }
 

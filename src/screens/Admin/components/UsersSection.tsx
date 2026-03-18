@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ApiUser } from '../../../services/adminService';
-import type { UserFormState } from '../types';
+import type { RegisterUserFormState, UserFormState } from '../types';
 import { formatDateTime } from '../utils';
 
 interface UsersSectionProps {
@@ -8,10 +8,12 @@ interface UsersSectionProps {
     selectedUserId: number | null;
     selectedUser: ApiUser | null;
     userForm: UserFormState;
+    registerUserForm: RegisterUserFormState;
     usersError: string | null;
     userSuccess: string | null;
     isLoadingUsers: boolean;
     isSavingUser: boolean;
+    isCreatingUser: boolean;
     deletingUserId: number | null;
     togglingAdminId: number | null;
     onRefreshUsers: () => Promise<void>;
@@ -19,6 +21,11 @@ interface UsersSectionProps {
     onToggleAdmin: (user: ApiUser) => Promise<void>;
     onDeleteUser: (userId: number) => void;
     onSaveUser: (e: React.FormEvent) => Promise<void>;
+    onRegisterUser: (e: React.FormEvent) => Promise<void>;
+    onRegisterNameChange: (value: string) => void;
+    onRegisterLoginChange: (value: string) => void;
+    onRegisterPasswordChange: (value: string) => void;
+    onRegisterPasswordConfirmationChange: (value: string) => void;
     onNameChange: (value: string) => void;
     onLoginChange: (value: string) => void;
     onPasswordChange: (value: string) => void;
@@ -31,10 +38,12 @@ const UsersSection: React.FC<UsersSectionProps> = ({
     selectedUserId,
     selectedUser,
     userForm,
+    registerUserForm,
     usersError,
     userSuccess,
     isLoadingUsers,
     isSavingUser,
+    isCreatingUser,
     deletingUserId,
     togglingAdminId,
     onRefreshUsers,
@@ -42,6 +51,11 @@ const UsersSection: React.FC<UsersSectionProps> = ({
     onToggleAdmin,
     onDeleteUser,
     onSaveUser,
+    onRegisterUser,
+    onRegisterNameChange,
+    onRegisterLoginChange,
+    onRegisterPasswordChange,
+    onRegisterPasswordConfirmationChange,
     onNameChange,
     onLoginChange,
     onPasswordChange,
@@ -68,6 +82,67 @@ const UsersSection: React.FC<UsersSectionProps> = ({
             {userSuccess && <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{userSuccess}</div>}
 
             <div className="grid gap-6">
+                <form onSubmit={(event) => void onRegisterUser(event)} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-5">
+                        <h3 className="text-lg font-bold text-slate-800">Cadastro de usuário</h3>
+                        <p className="text-sm text-slate-500">Crie novos usuários com nome, login, senha e confirmação de senha.</p>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">Nome</label>
+                            <input
+                                type="text"
+                                value={registerUserForm.name}
+                                onChange={(e) => onRegisterNameChange(e.target.value)}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-primary focus:bg-white"
+                                placeholder="Ex.: Maria Silva"
+                            />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">Login</label>
+                            <input
+                                type="text"
+                                value={registerUserForm.login}
+                                onChange={(e) => onRegisterLoginChange(e.target.value)}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-primary focus:bg-white"
+                                placeholder="Ex.: maria.silva"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">Senha</label>
+                            <input
+                                type="password"
+                                value={registerUserForm.password}
+                                onChange={(e) => onRegisterPasswordChange(e.target.value)}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-primary focus:bg-white"
+                                placeholder="Informe a senha"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">Confirmar senha</label>
+                            <input
+                                type="password"
+                                value={registerUserForm.passwordConfirmation}
+                                onChange={(e) => onRegisterPasswordConfirmationChange(e.target.value)}
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none transition focus:border-primary focus:bg-white"
+                                placeholder="Repita a senha"
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isCreatingUser}
+                        className="mt-5 w-full rounded-2xl bg-primary px-5 py-4 text-base font-bold text-white shadow-md transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+                    >
+                        {isCreatingUser ? 'Cadastrando usuário...' : 'Cadastrar usuário'}
+                    </button>
+                </form>
+
                 <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                     <div className="mb-3 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-slate-800">Lista de usuários</h3>

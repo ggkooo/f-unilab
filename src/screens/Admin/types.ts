@@ -6,6 +6,13 @@ export interface UserFormState {
     is_admin: boolean;
 }
 
+export interface RegisterUserFormState {
+    name: string;
+    login: string;
+    password: string;
+    passwordConfirmation: string;
+}
+
 export interface ConfirmDialogConfig {
     title: string;
     message: string;
@@ -19,4 +26,11 @@ export const emptyUserForm: UserFormState = {
     password: '',
     active: true,
     is_admin: false,
+};
+
+export const emptyRegisterUserForm: RegisterUserFormState = {
+    name: '',
+    login: '',
+    password: '',
+    passwordConfirmation: '',
 };

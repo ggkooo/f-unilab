@@ -42,8 +42,16 @@ export interface UpdateUserPayload {
     password?: string;
 }
 
+export interface RegisterUserPayload {
+    name: string;
+    login: string;
+    password: string;
+    password_confirmation: string;
+}
+
 const API_KEY = import.meta.env.VITE_API_KEY ?? apiConfig.apiKey;
 const USERS_PATH = import.meta.env.VITE_USERS_PATH ?? '/users';
+const REGISTER_PATH = import.meta.env.VITE_REGISTER_PATH ?? '/register';
 const MAKE_ADMIN_SUFFIX = '/make-admin';
 const REMOVE_ADMIN_SUFFIX = '/remove-admin';
 const VIDEOS_PATH = import.meta.env.VITE_VIDEOS_PATH ?? '/videos';
@@ -53,6 +61,7 @@ const ATTENDANCE_REPORT_PATH = import.meta.env.VITE_REPORT_PDF_PATH ?? '/reports
 type ApiErrorBody = {
     message?: string;
     error?: string;
+    errors?: Record<string, string[] | string>;
 };
 
 const createTimeoutController = (timeoutMs: number) => {
@@ -78,6 +87,16 @@ const buildJsonHeaders = (accessToken?: string): HeadersInit => ({
 const getErrorMessage = async (response: Response, fallbackMessage: string) => {
     try {
         const body = (await response.json()) as ApiErrorBody;
+
+        if (body.errors && typeof body.errors === 'object') {
+            const firstFieldError = Object.values(body.errors)
+                .flatMap((value) => (Array.isArray(value) ? value : [value]))
+                .find((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+            if (firstFieldError) {
+                return firstFieldError;
+            }
+        }
 
         if (body.message) {
             return body.message;
@@ -134,6 +153,18 @@ export const fetchAdminUsers = async (accessToken?: string) => {
 
     const data: unknown = await response.json();
     return Array.isArray(data) ? (data as ApiUser[]) : [];
+};
+
+export const registerAdminUser = async (payload: RegisterUserPayload, accessToken?: string) => {
+    await request(
+        buildApiUrl(REGISTER_PATH),
+        {
+            method: 'POST',
+            headers: buildJsonHeaders(accessToken),
+            body: JSON.stringify(payload),
+        },
+        'Não foi possível cadastrar o usuário.',
+    );
 };
 
 export const updateAdminUser = async (userId: number, payload: UpdateUserPayload, accessToken?: string) => {

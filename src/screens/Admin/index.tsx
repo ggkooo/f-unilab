@@ -8,6 +8,7 @@ import {
     fetchAdminUsers,
     fetchAdminVideos,
     fetchAttendanceReport,
+    registerAdminUser,
     toggleUserAdminRole,
     type ApiUser,
     updateAdminUser,
@@ -20,7 +21,13 @@ import SummaryCards from './components/SummaryCards';
 import UsersSection from './components/UsersSection';
 import VideosSection from './components/VideosSection';
 import { createAttendanceReportPdf } from './reportPdf';
-import { emptyUserForm, type ConfirmDialogConfig, type UserFormState } from './types';
+import {
+    emptyRegisterUserForm,
+    emptyUserForm,
+    type ConfirmDialogConfig,
+    type RegisterUserFormState,
+    type UserFormState,
+} from './types';
 import { formatLoginLabel } from './utils';
 
 const Admin: React.FC = () => {
@@ -33,6 +40,7 @@ const Admin: React.FC = () => {
     const [videos, setVideos] = useState<{ filename: string; url: string; created_at?: string }[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
+    const [registerUserForm, setRegisterUserForm] = useState<RegisterUserFormState>(emptyRegisterUserForm);
     const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -40,6 +48,7 @@ const Admin: React.FC = () => {
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [isLoadingVideos, setIsLoadingVideos] = useState(true);
     const [isSavingUser, setIsSavingUser] = useState(false);
+    const [isCreatingUser, setIsCreatingUser] = useState(false);
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isDownloadingReport, setIsDownloadingReport] = useState(false);
     const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
@@ -140,6 +149,54 @@ const Admin: React.FC = () => {
             ...prev,
             [field]: value,
         }));
+    };
+
+    const handleRegisterFieldChange = <K extends keyof RegisterUserFormState>(field: K, value: RegisterUserFormState[K]) => {
+        setRegisterUserForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleRegisterUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const trimmedName = registerUserForm.name.trim();
+        const trimmedLogin = registerUserForm.login.trim();
+
+        if (!trimmedName || !trimmedLogin || !registerUserForm.password || !registerUserForm.passwordConfirmation) {
+            setUsersError('Preencha nome, login, senha e confirmação de senha para cadastrar o usuário.');
+            return;
+        }
+
+        if (registerUserForm.password !== registerUserForm.passwordConfirmation) {
+            setUsersError('A confirmação de senha não confere.');
+            return;
+        }
+
+        setIsCreatingUser(true);
+        setUsersError(null);
+        setUserSuccess(null);
+
+        try {
+            await registerAdminUser(
+                {
+                    name: trimmedName,
+                    login: trimmedLogin,
+                    password: registerUserForm.password,
+                    password_confirmation: registerUserForm.passwordConfirmation,
+                },
+                accessToken,
+            );
+
+            setRegisterUserForm(emptyRegisterUserForm);
+            setUserSuccess('Usuário cadastrado com sucesso.');
+            await fetchUsers();
+        } catch (error) {
+            setUsersError(error instanceof Error ? error.message : 'Falha ao cadastrar usuário.');
+        } finally {
+            setIsCreatingUser(false);
+        }
     };
 
     const handleSaveUser = async (e: React.FormEvent) => {
@@ -360,10 +417,12 @@ const Admin: React.FC = () => {
                             selectedUserId={selectedUserId}
                             selectedUser={selectedUser}
                             userForm={userForm}
+                            registerUserForm={registerUserForm}
                             usersError={usersError}
                             userSuccess={userSuccess}
                             isLoadingUsers={isLoadingUsers}
                             isSavingUser={isSavingUser}
+                            isCreatingUser={isCreatingUser}
                             deletingUserId={deletingUserId}
                             togglingAdminId={togglingAdminId}
                             onRefreshUsers={fetchUsers}
@@ -371,6 +430,11 @@ const Admin: React.FC = () => {
                             onToggleAdmin={handleToggleAdmin}
                             onDeleteUser={handleDeleteUser}
                             onSaveUser={handleSaveUser}
+                            onRegisterUser={handleRegisterUser}
+                            onRegisterNameChange={(value) => handleRegisterFieldChange('name', value)}
+                            onRegisterLoginChange={(value) => handleRegisterFieldChange('login', value)}
+                            onRegisterPasswordChange={(value) => handleRegisterFieldChange('password', value)}
+                            onRegisterPasswordConfirmationChange={(value) => handleRegisterFieldChange('passwordConfirmation', value)}
                             onNameChange={(value) => handleUserFieldChange('name', value)}
                             onLoginChange={(value) => handleUserFieldChange('login', value)}
                             onPasswordChange={(value) => handleUserFieldChange('password', value)}

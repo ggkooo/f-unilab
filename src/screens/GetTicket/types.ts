@@ -12,4 +12,3 @@ export type ServiceOption = {
 };
 
 export type FeedbackType = 'success' | 'error' | null;
-

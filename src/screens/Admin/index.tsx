@@ -18,7 +18,6 @@ import ConfirmActionDialog from './components/ConfirmActionDialog';
 import ReportSection from './components/ReportSection';
 import SummaryCards from './components/SummaryCards';
 import UsersSection from './components/UsersSection';
-import VideosSection from './components/VideosSection';
 import { createAttendanceReportPdf } from './reportPdf';
 import {
     emptyRegisterUserForm,
@@ -403,15 +402,6 @@ const Admin: React.FC = () => {
                             onPasswordChange={(value) => handleUserFieldChange('password', value)}
                             onActiveChange={(value) => handleUserFieldChange('active', value)}
                             onIsAdminChange={(value) => handleUserFieldChange('is_admin', value)}
-                        />
-
-                        <VideosSection
-                            videos={videos}
-                            videosError={videosError}
-                            isLoadingVideos={isLoadingVideos}
-                            deletingVideoName={deletingVideoName}
-                            onRefreshVideos={fetchVideos}
-                            onDeleteVideo={handleDeleteVideo}
                         />
                     </div>
 

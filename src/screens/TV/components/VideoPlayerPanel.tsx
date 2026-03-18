@@ -11,15 +11,15 @@ interface VideoPlayerPanelProps {
 
 const VideoPlayerPanel = ({ video, videoSource, error, videoRef, onVideoEnded }: VideoPlayerPanelProps) => {
     return (
-        <div className="flex-grow flex flex-col justify-end">
-            <div className="w-full bg-blue-100/40 rounded-2xl shadow-inner p-2 flex justify-center items-center border border-blue-200 h-full min-h-[320px] max-h-[600px]">
+        <div className="flex-[1.15] min-h-[220px] sm:min-h-[260px] lg:min-h-[300px] flex flex-col justify-end">
+            <div className="w-full bg-blue-100/40 rounded-xl lg:rounded-2xl shadow-inner p-2 sm:p-2.5 flex justify-center items-center border border-blue-200 h-full min-h-0">
                 {error ? (
-                    <span className="text-red-500 text-xl text-center px-6">{error}</span>
+                    <span className="text-red-500 text-[clamp(1rem,1.2vw,1.4rem)] text-center px-6">{error}</span>
                 ) : video && videoSource ? (
                     <video
                         ref={videoRef}
                         key={video.filename}
-                        className="rounded-xl w-full h-full object-cover min-h-[300px] max-h-[580px]"
+                        className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[200px] max-h-[44vh] 2xl:max-h-[46vh]"
                         src={videoSource}
                         autoPlay
                         muted
@@ -27,7 +27,7 @@ const VideoPlayerPanel = ({ video, videoSource, error, videoRef, onVideoEnded }:
                         onEnded={onVideoEnded}
                     />
                 ) : (
-                    <span className="text-slate-400 text-xl">Nenhum vídeo disponível</span>
+                    <span className="text-slate-400 text-[clamp(1rem,1.2vw,1.4rem)] text-center">Nenhum vídeo disponível</span>
                 )}
             </div>
         </div>

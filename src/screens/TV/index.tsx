@@ -163,7 +163,7 @@ const Tv = () => {
     };
 
     return (
-        <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 min-h-screen flex flex-col w-full overflow-hidden">
+        <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 min-h-dvh flex flex-col w-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 z-0">
                 <div className="absolute -top-32 -left-32 w-[40vw] h-[40vw] bg-blue-200 opacity-30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 right-0 w-[30vw] h-[30vw] bg-blue-100 opacity-20 rounded-full blur-2xl animate-pulse" />
@@ -171,14 +171,14 @@ const Tv = () => {
 
             <Header />
 
-            <div className="z-10 flex justify-center mt-4 mb-2">
+            <div className="z-10 flex justify-center mt-2 sm:mt-4 mb-2 px-4">
                 <Clock />
             </div>
 
-            <main className="flex-grow w-full flex flex-col lg:flex-row items-stretch justify-center p-6 lg:p-10 gap-8 h-full z-10">
+            <main className="flex-1 min-h-0 w-full grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] items-stretch justify-center p-3 sm:p-4 lg:p-6 2xl:p-8 gap-4 lg:gap-6 2xl:gap-8 z-10">
                 <CurrentTicketPanel ticket={tickets[0] ?? null} isLoading={isLoadingTickets} error={ticketsError} />
 
-                <div className="flex-1 flex flex-col gap-8 min-w-0">
+                <div className="min-h-0 min-w-0 flex flex-col gap-4 lg:gap-6 2xl:gap-8">
                     <RecentCallsPanel tickets={tickets} isLoading={isLoadingTickets} error={ticketsError} />
                     <VideoPlayerPanel
                         video={videos[currentVideoIndex] ?? null}

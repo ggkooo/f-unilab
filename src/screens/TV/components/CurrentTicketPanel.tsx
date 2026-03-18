@@ -10,43 +10,43 @@ interface CurrentTicketPanelProps {
 
 const CurrentTicketPanel = ({ ticket, isLoading, error }: CurrentTicketPanelProps) => {
     return (
-        <section className="flex-[2] flex flex-col justify-center items-center bg-white/90 rounded-[3rem] shadow-2xl border border-slate-100 p-10 lg:p-20 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-blue-50/50 animate-pulse rounded-[3rem] z-0" />
+        <section className="min-h-0 flex flex-col justify-center items-center bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] 2xl:rounded-[2.5rem] shadow-2xl border border-slate-100 p-4 sm:p-6 lg:p-10 2xl:p-12 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-blue-50/50 animate-pulse rounded-[1.5rem] lg:rounded-[2rem] 2xl:rounded-[2.5rem] z-0" />
 
             <div className="relative z-10 w-full flex flex-col items-center">
-                <span className="text-3xl lg:text-5xl font-bold text-slate-500 uppercase tracking-widest mb-4 lg:mb-8">
+                <span className="text-[clamp(1.1rem,2vw,2.4rem)] font-bold text-slate-500 uppercase tracking-[0.22em] mb-3 lg:mb-6">
                     Senha Chamada
                 </span>
 
                 {isLoading ? (
-                    <div className="text-4xl text-slate-400 mt-10">Carregando...</div>
+                    <div className="text-[clamp(1.2rem,2vw,2.2rem)] text-slate-400 mt-6">Carregando...</div>
                 ) : error ? (
-                    <div className="text-4xl text-red-500 mt-10">{error}</div>
+                    <div className="text-[clamp(1.1rem,1.8vw,2rem)] text-red-500 mt-6">{error}</div>
                 ) : ticket ? (
                     <>
-                        <div className="flex flex-col items-center gap-4 mb-8">
-                            <div className="text-[7rem] lg:text-[18rem] font-bold text-[#003B71] leading-none drop-shadow-md">
+                        <div className="flex flex-col items-center gap-3 mb-5 lg:mb-7">
+                            <div className="text-[clamp(4rem,10vw,14rem)] font-bold text-[#003B71] leading-none drop-shadow-md">
                                 {ticket.key}
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center gap-4 mb-8">
+                        <div className="flex flex-col items-center gap-3 mb-5 lg:mb-7 w-full">
                             <div className="flex items-center justify-center gap-4">
-                                <span className="inline-flex items-center bg-gradient-to-r from-blue-500 to-sky-500 text-white px-10 py-6 rounded-[2.5rem] shadow-2xl text-5xl lg:text-7xl font-extrabold tracking-widest drop-shadow-lg">
+                                <span className="inline-flex items-center bg-gradient-to-r from-blue-500 to-sky-500 text-white px-4 sm:px-6 lg:px-10 py-3 sm:py-4 lg:py-6 rounded-[1.4rem] lg:rounded-[2.5rem] shadow-2xl text-[clamp(1.3rem,2.7vw,3.8rem)] font-extrabold tracking-[0.08em] drop-shadow-lg">
                                     Guichê
-                                    <span className="ml-6 text-7xl lg:text-9xl font-black text-white drop-shadow-xl">
+                                    <span className="ml-3 sm:ml-4 lg:ml-6 text-[clamp(1.9rem,4.2vw,5.8rem)] font-black text-white drop-shadow-xl leading-none">
                                         {formatCounterLabel(ticket.counterName)}
                                     </span>
                                 </span>
                             </div>
                         </div>
 
-                        <div className="mt-6 text-3xl lg:text-4xl text-slate-500 font-medium flex items-center gap-4 justify-center">
+                        <div className="mt-3 lg:mt-5 text-[clamp(1.1rem,1.8vw,2.2rem)] text-slate-500 font-medium flex items-center gap-3 justify-center w-full">
                             <Badge color="#003B71" size="hero">{ticket.serviceType}</Badge>
                         </div>
                     </>
                 ) : (
-                    <div className="text-4xl text-slate-400 mt-10">Nenhuma senha chamada</div>
+                    <div className="text-[clamp(1.2rem,2vw,2.2rem)] text-slate-400 mt-6">Nenhuma senha chamada</div>
                 )}
             </div>
         </section>

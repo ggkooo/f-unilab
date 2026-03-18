@@ -20,7 +20,50 @@ const Tv = () => {
     const [videos, setVideos] = useState<TvVideo[]>([]);
     const [videosError, setVideosError] = useState<string | null>(null);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+    const alertAudioRef = useRef<HTMLAudioElement | null>(null);
+    const previousTopTicketRef = useRef<TvTicket | null>(null);
+    const hasHydratedTicketsRef = useRef(false);
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    const playTicketAlert = () => {
+        const audio = alertAudioRef.current;
+
+        if (!audio) {
+            return;
+        }
+
+        audio.currentTime = 0;
+        void audio.play().catch(() => {
+            // Ignore autoplay blocks silently to avoid interrupting the TV screen flow.
+        });
+    };
+
+    const shouldNotifyTicketChange = (previousTicket: TvTicket | null, nextTicket: TvTicket | null) => {
+        if (!nextTicket) {
+            return false;
+        }
+
+        if (!previousTicket) {
+            return true;
+        }
+
+        if (previousTicket.id !== nextTicket.id) {
+            return true;
+        }
+
+        const previousCalledAt = previousTicket.calledAt?.getTime() ?? 0;
+        const nextCalledAt = nextTicket.calledAt?.getTime() ?? 0;
+
+        if (previousTicket.updatedAt.getTime() !== nextTicket.updatedAt.getTime()) {
+            return true;
+        }
+
+        if (previousCalledAt !== nextCalledAt) {
+            return true;
+        }
+
+        return previousTicket.counterName !== nextTicket.counterName;
+    };
 
     const refreshTickets = async (showLoading = false) => {
         if (showLoading) {
@@ -29,6 +72,17 @@ const Tv = () => {
 
         try {
             const nextTickets = await fetchRecentlyCalledTickets();
+            const nextTopTicket = nextTickets[0] ?? null;
+
+            if (hasHydratedTicketsRef.current) {
+                if (shouldNotifyTicketChange(previousTopTicketRef.current, nextTopTicket)) {
+                    playTicketAlert();
+                }
+            } else {
+                hasHydratedTicketsRef.current = true;
+            }
+
+            previousTopTicketRef.current = nextTopTicket;
 
             setTicketsError(null);
             setTickets((previousTickets) => {
@@ -88,6 +142,10 @@ const Tv = () => {
     };
 
     useEffect(() => {
+        const audio = new Audio('/assets/sound/sound.mp3');
+        audio.preload = 'auto';
+        alertAudioRef.current = audio;
+
         void refreshTickets(true);
         void refreshVideos();
 
@@ -102,22 +160,29 @@ const Tv = () => {
         return () => {
             window.clearInterval(ticketsInterval);
             window.clearInterval(videosInterval);
+
+            if (alertAudioRef.current) {
+                alertAudioRef.current.pause();
+                alertAudioRef.current = null;
+            }
         };
     }, []);
 
     return (
-        <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 h-dvh flex flex-col w-full overflow-hidden">
+        <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 h-screen max-h-screen flex flex-col w-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 z-0">
                 <div className="absolute -top-32 -left-32 w-[40vw] h-[40vw] bg-blue-200 opacity-30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 right-0 w-[30vw] h-[30vw] bg-blue-100 opacity-20 rounded-full blur-2xl animate-pulse" />
             </div>
 
-            <Header />
+            <div className="shrink-0">
+                <Header />
+            </div>
 
-            <main className="flex-1 min-h-0 w-full grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] items-stretch justify-center p-3 sm:p-4 lg:p-6 2xl:p-8 gap-4 lg:gap-6 2xl:gap-8 z-10">
+            <main className="flex-1 min-h-0 overflow-hidden w-full grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] items-stretch justify-center p-3 sm:p-4 lg:p-6 2xl:p-8 gap-4 lg:gap-6 2xl:gap-8 z-10">
                 <CurrentTicketPanel ticket={tickets[0] ?? null} isLoading={isLoadingTickets} error={ticketsError} />
 
-                <div className="min-h-0 min-w-0 flex flex-col gap-4 lg:gap-6 2xl:gap-8">
+                <div className="min-h-0 min-w-0 overflow-hidden flex flex-col gap-4 lg:gap-6 2xl:gap-8">
                     <RecentCallsPanel tickets={tickets} isLoading={isLoadingTickets} error={ticketsError} />
                     <VideoPlayerPanel
                         video={videos[currentVideoIndex] ?? null}
@@ -127,7 +192,9 @@ const Tv = () => {
                 </div>
             </main>
 
-            <Footer />
+            <div className="shrink-0">
+                <Footer />
+            </div>
         </div>
     );
 };

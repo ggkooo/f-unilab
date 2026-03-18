@@ -4,17 +4,19 @@ export const SERVICE_OPTIONS: ServiceOption[] = [
     {
         icon: 'support_agent',
         title: 'Atendimento Normal',
-        subtitle: 'Atendimento geral para orientações e solicitações comuns.',
+        subtitle: 'Atendimento geral para orienta??es e solicita??es comuns.',
         variant: 'primary',
     },
     {
         icon: 'priority_high',
         title: 'Atendimento Preferencial',
-        subtitle: 'Prioridade para os públicos com atendimento preferencial.',
+        subtitle: 'Prioridade para os p?blicos com atendimento preferencial.',
         variant: 'warning',
         badges: [
             { icon: 'elderly', label: '60+' },
             { icon: 'pregnant_woman', label: 'Gestante' },
+            { icon: 'child_care', label: 'Crian?a de colo' },
+            { icon: 'neurology', label: 'Autista' },
             { icon: 'accessible', label: 'Deficiente' },
         ],
     },
@@ -26,3 +28,4 @@ export const SERVICE_OPTIONS: ServiceOption[] = [
         fullWidth: true,
     },
 ];
+

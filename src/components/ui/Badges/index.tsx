@@ -13,8 +13,6 @@ const sizeStyles: Record<NonNullable<BadgeProps['size']>, string> = {
 };
 
 const Badge: React.FC<BadgeProps> = ({ color, children, size = 'default', neonBorder = false }) => {
-  const neonClass = neonBorder ? 'border-2 neon-pulse-blue' : '';
-  
   // Determine neon color based on color prop
   let neonColorClass = 'neon-pulse-blue';
   if (color.toLowerCase().includes('ef4444') || color === '#EF4444') {

@@ -5,9 +5,11 @@ export type ServiceOption = {
     variant: 'primary' | 'success' | 'warning';
     fullWidth?: boolean;
     badges?: Array<{
-        icon: string;
+        icon?: string;
+        imageSrc?: string;
         label: string;
     }>;
 };
 
 export type FeedbackType = 'success' | 'error' | null;
+

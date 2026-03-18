@@ -16,7 +16,7 @@ export const SERVICE_OPTIONS: ServiceOption[] = [
             { icon: 'elderly', label: '60+' },
             { icon: 'pregnant_woman', label: 'Gestante' },
             { icon: 'child_care', label: 'Crian?a de colo' },
-            { icon: 'neurology', label: 'Autista' },
+            { imageSrc: '/assets/img/icons/campanha-de-fita-autismo.png', label: 'Autista' },
             { icon: 'accessible', label: 'Deficiente' },
         ],
     },

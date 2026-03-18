@@ -113,6 +113,89 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         return boxY + 56 + 10;
     };
 
+    const ensurePageSpace = (cursorY: number, requiredHeight: number) => {
+        if (cursorY + requiredHeight <= pageHeight - 18) {
+            return cursorY;
+        }
+
+        pdf.addPage();
+        return 24;
+    };
+
+    const drawGuicheSection = (y: number) => {
+        const guicheEntries = report.attendances_by_guiche ?? [];
+        let sectionY = ensurePageSpace(y, 40);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(15, 23, 42);
+        pdf.text('Atendimentos por guichê', margin, sectionY);
+        sectionY += 8;
+
+        if (guicheEntries.length === 0) {
+            pdf.setDrawColor(226, 232, 240);
+            pdf.roundedRect(margin, sectionY, usableWidth, 24, 4, 4);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(11);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Nenhum dado de guichê encontrado no período.', margin + 8, sectionY + 14);
+            return sectionY + 34;
+        }
+
+        const maxTotal = Math.max(1, ...guicheEntries.map((entry) => entry.total));
+
+        guicheEntries.forEach((entry, index) => {
+            sectionY = ensurePageSpace(sectionY, 36);
+
+            const cardY = sectionY;
+            const accentColors: Array<[number, number, number]> = [
+                [37, 99, 235],
+                [59, 130, 246],
+                [29, 78, 216],
+                [30, 64, 175],
+            ];
+            const accent = accentColors[index % accentColors.length];
+
+            pdf.setDrawColor(226, 232, 240);
+            pdf.setFillColor(248, 250, 252);
+            pdf.roundedRect(margin, cardY, usableWidth, 30, 4, 4, 'FD');
+            pdf.setFillColor(accent[0], accent[1], accent[2]);
+            pdf.roundedRect(margin, cardY, 3, 30, 2, 2, 'F');
+
+            const title = `${entry.guiche} (${entry.attended_by_user_login})`;
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10);
+            pdf.setTextColor(30, 41, 59);
+            pdf.text(title, margin + 8, cardY + 7);
+
+            const barX = margin + 8;
+            const barY = cardY + 11;
+            const barWidth = usableWidth - 34;
+            const fillWidth = Math.max(4, (entry.total / maxTotal) * barWidth);
+
+            pdf.setFillColor(226, 232, 240);
+            pdf.roundedRect(barX, barY, barWidth, 6, 2, 2, 'F');
+            pdf.setFillColor(accent[0], accent[1], accent[2]);
+            pdf.roundedRect(barX, barY, fillWidth, 6, 2, 2, 'F');
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10);
+            pdf.setTextColor(15, 23, 42);
+            pdf.text(String(entry.total), barX + barWidth + 4, barY + 4);
+
+            const statsY = cardY + 24;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(51, 65, 85);
+            pdf.text(`Concluídos: ${entry.completed}`, margin + 8, statsY);
+            pdf.text(`Cancelados: ${entry.canceled}`, margin + 56, statsY);
+            pdf.text(`Não informados: ${entry.unknown}`, margin + 100, statsY);
+
+            sectionY += 36;
+        });
+
+        return sectionY;
+    };
+
     pdf.setFillColor(15, 23, 42);
     pdf.rect(0, 0, pageWidth, 34, 'F');
     pdf.setTextColor(255, 255, 255);
@@ -199,12 +282,10 @@ export const createAttendanceReportPdf = (report: AttendanceReportResponse): voi
         [59, 130, 246],
     ];
 
-    if (cursorY + 74 > pageHeight - 18) {
-        pdf.addPage();
-        cursorY = 24;
-    }
+    cursorY = ensurePageSpace(cursorY, 74);
 
     cursorY = drawDistributionSection('Distribuição por desfecho', outcomeEntries, formatOutcomeLabel, cursorY, outcomeColors);
+    cursorY = drawGuicheSection(cursorY + 2);
 
     const footerY = pageHeight - 10;
     pdf.setDrawColor(226, 232, 240);

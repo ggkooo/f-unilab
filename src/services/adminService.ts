@@ -31,6 +31,26 @@ export interface AttendanceReportResponse {
     attendances_per_day: Record<string, number>;
     attendances_by_type: Record<string, number>;
     attendances_by_outcome: Record<string, number>;
+    attendances_by_guiche?: Array<{
+        guiche: string;
+        attended_by_user_id: number;
+        attended_by_user_name: string;
+        attended_by_user_login: string;
+        total: number;
+        completed: number;
+        canceled: number;
+        unknown: number;
+    }>;
+    attendances_by_user?: Array<{
+        user_id: number;
+        name: string;
+        login: string;
+        guiche: string;
+        total: number;
+        completed: number;
+        canceled: number;
+        unknown: number;
+    }>;
     total_attendances: number;
 }
 

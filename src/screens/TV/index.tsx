@@ -11,6 +11,36 @@ import { getTicketsSignature, getVideosSignature } from './utils';
 
 const TICKETS_REFRESH_INTERVAL_MS = 5000;
 const VIDEOS_REFRESH_INTERVAL_MS = 30000;
+const VIDEO_SILENCE_ENFORCE_INTERVAL_MS = 1000;
+
+type HtmlVideoWithAudioTracks = HTMLVideoElement & {
+    audioTracks?: ArrayLike<{ enabled: boolean }>;
+};
+
+const enforceSilentVideoPlayback = (element: HTMLVideoElement | null) => {
+    if (!element) {
+        return;
+    }
+
+    element.muted = true;
+    element.defaultMuted = true;
+    element.volume = 0;
+    element.setAttribute('muted', '');
+
+    const trackContainer = element as HtmlVideoWithAudioTracks;
+
+    if (!trackContainer.audioTracks) {
+        return;
+    }
+
+    for (let index = 0; index < trackContainer.audioTracks.length; index += 1) {
+        const track = trackContainer.audioTracks[index];
+
+        if (track) {
+            track.enabled = false;
+        }
+    }
+};
 
 const Tv = () => {
     const [tickets, setTickets] = useState<TvTicket[]>([]);
@@ -24,6 +54,8 @@ const Tv = () => {
     const previousTopTicketRef = useRef<TvTicket | null>(null);
     const previousTopTicketSignatureRef = useRef('');
     const hasHydratedTicketsRef = useRef(false);
+    const mediaUnlockedRef = useRef(false);
+    const pendingAlertPlaybackRef = useRef(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const getTicketAlertSignature = (ticket: TvTicket | null) => {
@@ -55,6 +87,8 @@ const Tv = () => {
         audio.defaultMuted = false;
         audio.volume = 1;
         void audio.play().catch(() => {
+            pendingAlertPlaybackRef.current = true;
+
             // Fallback to a fresh instance in case the original audio element became blocked.
             const fallbackAudio = new Audio('/assets/sound/sound.mp3');
             fallbackAudio.preload = 'auto';
@@ -63,7 +97,9 @@ const Tv = () => {
             fallbackAudio.volume = 1;
             fallbackAudio.currentTime = 0;
 
-            void fallbackAudio.play().catch(() => {
+            void fallbackAudio.play().then(() => {
+                pendingAlertPlaybackRef.current = false;
+            }).catch(() => {
                 // Ignore autoplay blocks silently to avoid interrupting the TV screen flow.
             });
         });
@@ -179,6 +215,64 @@ const Tv = () => {
             }
         };
     }, []);
+
+    useEffect(() => {
+        const unlockMediaPlayback = () => {
+            if (mediaUnlockedRef.current) {
+                return;
+            }
+
+            mediaUnlockedRef.current = true;
+
+            const audio = alertAudioRef.current;
+
+            if (!audio) {
+                return;
+            }
+
+            audio.muted = true;
+            audio.defaultMuted = true;
+            audio.volume = 0;
+            audio.currentTime = 0;
+
+            void audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                audio.muted = false;
+                audio.defaultMuted = false;
+                audio.volume = 1;
+
+                if (pendingAlertPlaybackRef.current) {
+                    playTicketAlert();
+                }
+            }).catch(() => {
+                // Even if prime playback fails, keep the app flow running.
+            });
+        };
+
+        window.addEventListener('pointerdown', unlockMediaPlayback, { passive: true });
+        window.addEventListener('touchstart', unlockMediaPlayback, { passive: true });
+        window.addEventListener('keydown', unlockMediaPlayback);
+
+        return () => {
+            window.removeEventListener('pointerdown', unlockMediaPlayback);
+            window.removeEventListener('touchstart', unlockMediaPlayback);
+            window.removeEventListener('keydown', unlockMediaPlayback);
+        };
+    }, []);
+
+    useEffect(() => {
+        const enforce = () => {
+            enforceSilentVideoPlayback(videoRef.current);
+        };
+
+        enforce();
+        const intervalId = window.setInterval(enforce, VIDEO_SILENCE_ENFORCE_INTERVAL_MS);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [currentVideoIndex, videos]);
 
     return (
         <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 h-screen max-h-screen flex flex-col w-full overflow-hidden">

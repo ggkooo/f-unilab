@@ -8,6 +8,10 @@ interface VideoPlayerPanelProps {
     videoRef: RefObject<HTMLVideoElement | null>;
 }
 
+type HtmlVideoWithAudioTracks = HTMLVideoElement & {
+    audioTracks?: ArrayLike<{ enabled: boolean }>;
+};
+
 const VideoPlayerPanel = ({ video, error, videoRef }: VideoPlayerPanelProps) => {
     const enforceSilentPlayback = (element: HTMLVideoElement | null) => {
         if (!element) {
@@ -17,6 +21,21 @@ const VideoPlayerPanel = ({ video, error, videoRef }: VideoPlayerPanelProps) => 
         element.muted = true;
         element.defaultMuted = true;
         element.volume = 0;
+        element.setAttribute('muted', '');
+
+        const trackContainer = element as HtmlVideoWithAudioTracks;
+
+        if (!trackContainer.audioTracks) {
+            return;
+        }
+
+        for (let index = 0; index < trackContainer.audioTracks.length; index += 1) {
+            const track = trackContainer.audioTracks[index];
+
+            if (track) {
+                track.enabled = false;
+            }
+        }
     };
 
     return (

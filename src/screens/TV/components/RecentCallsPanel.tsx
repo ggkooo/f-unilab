@@ -35,9 +35,9 @@ const ServiceTypeBadge = ({ serviceType, color }: ServiceTypeBadgeProps) => {
     }, [serviceType]);
 
     return (
-        <div className="w-full">
-            <Badge color={color} neonBorder={true} className="w-full px-3 sm:px-4 py-2 sm:py-2.5">
-                <div ref={containerRef} className="relative w-full overflow-hidden">
+        <div className="w-full min-w-0 overflow-hidden">
+            <Badge color={color} neonBorder={true} className="w-full min-w-0 overflow-hidden px-[clamp(0.6rem,0.9vw,1rem)] py-[clamp(0.35rem,0.65vh,0.7rem)]">
+                <div ref={containerRef} className="relative w-full min-w-0 overflow-hidden">
                     <span ref={measureRef} className="invisible absolute whitespace-nowrap">
                         {serviceType}
                     </span>
@@ -60,12 +60,12 @@ const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) 
     const recentTickets = tickets.slice(0, 3);
 
     return (
-        <section className="flex-1 min-h-0 flex flex-col bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border border-slate-100 p-3 sm:p-4 lg:p-5 2xl:p-6 min-w-0 overflow-hidden">
-            <h3 className="text-[clamp(0.95rem,1.4vw,1.45rem)] font-bold text-[#003B71] mb-2 lg:mb-3 border-b-2 border-slate-100 pb-2 text-center">
+        <section className="flex-1 min-h-0 flex flex-col bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border border-slate-100 p-[clamp(0.65rem,1vw,1.35rem)] min-w-0 overflow-hidden">
+            <h3 className="text-[clamp(0.95rem,1.4vw,1.45rem)] font-bold text-[#003B71] mb-[clamp(0.35rem,0.8vh,0.75rem)] border-b-2 border-slate-100 pb-[clamp(0.3rem,0.7vh,0.65rem)] text-center">
                 Últimas Chamadas
             </h3>
 
-            <div className="grid grid-rows-3 gap-2 lg:gap-3 flex-1 min-h-0">
+            <div className="grid grid-rows-3 gap-[clamp(0.45rem,1vh,1rem)] flex-1 min-h-0">
                 {isLoading ? (
                     <div className="text-[clamp(0.85rem,1.2vw,1.3rem)] text-slate-400">Carregando...</div>
                 ) : error ? (
@@ -76,16 +76,16 @@ const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) 
                     recentTickets.map((ticket, index) => (
                         <div
                             key={ticket.id}
-                            className={`min-h-0 h-full flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-2.5 lg:p-3 rounded-lg lg:rounded-xl transition-all duration-300 ${index === 0 ? 'bg-slate-50/80 scale-[1.01]' : 'bg-slate-50/40'}`}
+                            className={`min-h-0 h-full grid grid-cols-2 items-center gap-[clamp(0.45rem,0.9vw,1rem)] p-[clamp(0.55rem,1vh,0.95rem)] rounded-xl lg:rounded-2xl transition-all duration-300 overflow-hidden ${index === 0 ? 'bg-slate-50/80' : 'bg-slate-50/40'}`}
                         >
-                            <div className="w-1/2 min-w-0 max-w-1/2 flex items-center gap-3">
+                            <div className="min-w-0 flex items-center gap-3">
                                 <span className="text-[clamp(1.1rem,2.2vw,2.4rem)] font-bold text-slate-700 truncate leading-none">
                                     {ticket.key}
                                 </span>
                             </div>
 
-                            <div className="w-1/2 min-w-0 max-w-1/2 flex flex-col items-end gap-1">
-                                <div className="w-full flex justify-end">
+                            <div className="min-w-0 flex flex-col items-end gap-[clamp(0.25rem,0.6vh,0.55rem)] overflow-hidden">
+                                <div className="w-full min-w-0 flex justify-end overflow-hidden">
                                     <ServiceTypeBadge
                                         serviceType={ticket.serviceType}
                                         color={getServiceBadgeColor(ticket.serviceType)}

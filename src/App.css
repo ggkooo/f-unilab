@@ -54,9 +54,10 @@
 }
 
 .badge-marquee-track {
-  display: inline-flex;
-  min-width: max-content;
+  display: flex;
+  width: max-content;
   animation: badgeMarquee 8s linear infinite;
+  will-change: transform;
 }
 
 .badge-marquee-text {

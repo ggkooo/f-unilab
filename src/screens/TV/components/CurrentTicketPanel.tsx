@@ -1,6 +1,6 @@
 import Badge from '../../../components/ui/Badges';
 import type { TvTicket } from '../types';
-import { formatCounterLabel } from '../utils';
+import { formatCounterLabel, getServiceBadgeColor } from '../utils';
 
 interface CurrentTicketPanelProps {
     ticket: TvTicket | null;
@@ -42,7 +42,7 @@ const CurrentTicketPanel = ({ ticket, isLoading, error }: CurrentTicketPanelProp
                         </div>
 
                         <div className="mt-3 lg:mt-5 text-[clamp(1.1rem,1.8vw,2.2rem)] text-slate-500 font-medium flex items-center gap-3 justify-center w-full">
-                            <Badge color="#003B71" size="hero">{ticket.serviceType}</Badge>
+                            <Badge color={getServiceBadgeColor(ticket.serviceType)} size="hero">{ticket.serviceType}</Badge>
                         </div>
                     </>
                 ) : (

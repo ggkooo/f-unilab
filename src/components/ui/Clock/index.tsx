@@ -12,14 +12,16 @@ const Clock: React.FC = () => {
   const hours = pad(time.getHours());
   const minutes = pad(time.getMinutes());
   const seconds = pad(time.getSeconds());
-  const date = time.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+  const date = time.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
 
   return (
-    <div className="flex flex-col items-center justify-center select-none">
-      <span className="text-[clamp(1.8rem,4.5vw,6rem)] font-mono font-bold text-[#003B71] drop-shadow-sm tracking-wider">
+    <div className="flex items-center justify-center gap-4 sm:gap-5 lg:gap-6 select-none">
+      <span className="text-[clamp(1.8rem,3.2vw,4.8rem)] font-mono font-bold text-[#003B71] drop-shadow-sm tracking-wider">
         {hours}:{minutes}:{seconds}
       </span>
-      <span className="text-[clamp(0.9rem,1.3vw,1.8rem)] text-slate-500 mt-1 sm:mt-2 capitalize text-center px-3">{date}</span>
+      <span className="text-[clamp(0.8rem,1.2vw,1.6rem)] text-slate-600 capitalize">
+        {date}
+      </span>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import Badge from '../../../components/ui/Badges';
 import type { TvTicket } from '../types';
-import { formatCounterLabel } from '../utils';
+import { formatCounterLabel, getServiceBadgeColor } from '../utils';
 
 interface RecentCallsPanelProps {
     tickets: TvTicket[];
@@ -10,35 +10,35 @@ interface RecentCallsPanelProps {
 
 const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) => {
     return (
-        <section className="flex-1 min-h-0 flex flex-col bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border border-slate-100 p-4 sm:p-5 lg:p-7 2xl:p-8 min-w-0">
-            <h3 className="text-[clamp(1.1rem,1.7vw,2rem)] font-bold text-[#003B71] mb-4 lg:mb-5 border-b-2 border-slate-100 pb-3 text-center">
+        <section className="flex-1 min-h-0 flex flex-col bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border border-slate-100 p-4 sm:p-5 lg:p-6 2xl:p-7 min-w-0">
+            <h3 className="text-[clamp(0.95rem,1.5vw,1.6rem)] font-bold text-[#003B71] mb-3 lg:mb-4 border-b-2 border-slate-100 pb-2 text-center">
                 Últimas Chamadas
             </h3>
 
-            <div className="flex flex-col gap-3 lg:gap-4 flex-1 min-h-0 overflow-y-auto pr-1">
+            <div className="flex flex-col gap-2 lg:gap-3 flex-1 min-h-0 overflow-y-auto pr-1">
                 {isLoading ? (
-                    <div className="text-[clamp(1rem,1.4vw,1.6rem)] text-slate-400">Carregando...</div>
+                    <div className="text-[clamp(0.85rem,1.2vw,1.3rem)] text-slate-400">Carregando...</div>
                 ) : error ? (
-                    <div className="text-[clamp(1rem,1.3vw,1.5rem)] text-red-500">{error}</div>
+                    <div className="text-[clamp(0.85rem,1.1vw,1.2rem)] text-red-500">{error}</div>
                 ) : tickets.length === 0 ? (
-                    <div className="text-[clamp(1rem,1.4vw,1.6rem)] text-slate-400">Nenhuma senha chamada</div>
+                    <div className="text-[clamp(0.85rem,1.2vw,1.3rem)] text-slate-400">Nenhuma senha chamada</div>
                 ) : (
                     tickets.map((ticket, index) => (
                         <div
                             key={ticket.id}
-                            className={`flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 lg:p-5 rounded-xl lg:rounded-2xl transition-all duration-300 ${index === 0 ? 'bg-blue-50 border-2 border-blue-200 shadow-lg scale-[1.01]' : 'bg-slate-50/50'}`}
+                            className={`flex items-center justify-between gap-2 sm:gap-3 p-2.5 sm:p-3 lg:p-4 rounded-lg lg:rounded-xl transition-all duration-300 ${index === 0 ? 'bg-slate-50/80 scale-[1.01]' : 'bg-slate-50/40'}`}
                         >
-                            <div className="flex items-center gap-4 min-w-0">
-                                <span className="text-[clamp(1.5rem,3vw,3.2rem)] font-bold text-slate-700 truncate leading-none">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <span className="text-[clamp(1.1rem,2.2vw,2.4rem)] font-bold text-slate-700 truncate leading-none">
                                     {ticket.key}
                                 </span>
                             </div>
 
-                            <div className="flex flex-col items-end min-w-0">
-                                <Badge color="#003B71">{ticket.serviceType}</Badge>
-                                <span className="text-[clamp(0.9rem,1.3vw,1.5rem)] text-slate-500 block mt-1.5 text-right whitespace-nowrap">
+                            <div className="flex flex-col items-end gap-1 min-w-0">
+                                <Badge color={getServiceBadgeColor(ticket.serviceType)} neonBorder={true}>{ticket.serviceType}</Badge>
+                                <span className="text-[clamp(0.7rem,1rem,1.1rem)] text-slate-500 block text-right whitespace-nowrap">
                                     Guichê{' '}
-                                    <span className="text-[clamp(1.5rem,2.8vw,3.2rem)] font-bold text-[#003B71] ml-1.5 leading-none align-middle">
+                                    <span className="text-[clamp(1rem,1.8vw,2rem)] font-bold text-[#003B71] ml-1 leading-none align-middle">
                                         {formatCounterLabel(ticket.counterName)}
                                     </span>
                                 </span>

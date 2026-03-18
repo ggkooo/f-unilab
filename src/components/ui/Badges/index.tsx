@@ -4,6 +4,7 @@ interface BadgeProps {
   color: string;
   children: React.ReactNode;
   size?: 'default' | 'hero';
+  neonBorder?: boolean;
 }
 
 const sizeStyles: Record<NonNullable<BadgeProps['size']>, string> = {
@@ -11,13 +12,25 @@ const sizeStyles: Record<NonNullable<BadgeProps['size']>, string> = {
   hero: 'px-6 sm:px-8 py-3 sm:py-4 text-[clamp(1.2rem,2.2vw,3.6rem)] shadow-xl',
 };
 
-const Badge: React.FC<BadgeProps> = ({ color, children, size = 'default' }) => (
+const Badge: React.FC<BadgeProps> = ({ color, children, size = 'default', neonBorder = false }) => {
+  const neonClass = neonBorder ? 'border-2 neon-pulse-blue' : '';
+  
+  // Determine neon color based on color prop
+  let neonColorClass = 'neon-pulse-blue';
+  if (color.toLowerCase().includes('ef4444') || color === '#EF4444') {
+    neonColorClass = 'neon-pulse-red';
+  } else if (color.toLowerCase().includes('f59e0b') || color === '#F59E0B') {
+    neonColorClass = 'neon-pulse-amber';
+  }
+
+  return (
   <span
-    className={`inline-block rounded-full text-white font-extrabold tracking-wide ${sizeStyles[size]}`}
+    className={`inline-block rounded-full text-white font-extrabold tracking-wide ${sizeStyles[size]} ${neonBorder ? `border-2 ${neonColorClass}` : ''}`}
     style={{ background: color }}
   >
     {children}
   </span>
 );
+};
 
 export default Badge;

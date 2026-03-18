@@ -4,7 +4,6 @@ import Layout from '../../components/layout/Layout';
 import { clearAuthSession, getAccessToken, getAuthSession } from '../../auth/session';
 import {
     deleteAdminUser,
-    deleteAdminVideo,
     fetchAdminUsers,
     fetchAdminVideos,
     fetchAttendanceReport,
@@ -43,16 +42,13 @@ const Admin: React.FC = () => {
     const [endDate, setEndDate] = useState('');
 
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-    const [isLoadingVideos, setIsLoadingVideos] = useState(true);
     const [isSavingUser, setIsSavingUser] = useState(false);
     const [isCreatingUser, setIsCreatingUser] = useState(false);
     const [isDownloadingReport, setIsDownloadingReport] = useState(false);
     const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
     const [togglingAdminId, setTogglingAdminId] = useState<number | null>(null);
-    const [deletingVideoName, setDeletingVideoName] = useState<string | null>(null);
 
     const [usersError, setUsersError] = useState<string | null>(null);
-    const [videosError, setVideosError] = useState<string | null>(null);
     const [reportError, setReportError] = useState<string | null>(null);
     const [userSuccess, setUserSuccess] = useState<string | null>(null);
     const [reportSuccess, setReportSuccess] = useState<string | null>(null);
@@ -114,16 +110,10 @@ const Admin: React.FC = () => {
     };
 
     const fetchVideos = async () => {
-        setIsLoadingVideos(true);
-        setVideosError(null);
-
         try {
             setVideos(await fetchAdminVideos(accessToken));
-        } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao buscar vídeos.');
+        } catch {
             setVideos([]);
-        } finally {
-            setIsLoadingVideos(false);
         }
     };
 
@@ -283,32 +273,6 @@ const Admin: React.FC = () => {
         } finally {
             setTogglingAdminId(null);
         }
-    };
-
-    const deleteVideo = async (filename: string) => {
-        setDeletingVideoName(filename);
-        setVideosError(null);
-
-        try {
-            await deleteAdminVideo(filename, accessToken);
-
-            await fetchVideos();
-        } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao remover vídeo.');
-        } finally {
-            setDeletingVideoName(null);
-        }
-    };
-
-    const handleDeleteVideo = (filename: string) => {
-        setConfirmDialog({
-            title: 'Remover vídeo',
-            message: `Deseja realmente remover o vídeo ${filename}? Esta ação não pode ser desfeita.`,
-            confirmLabel: 'Remover vídeo',
-            onConfirm: async () => {
-                await deleteVideo(filename);
-            },
-        });
     };
 
     const handleCloseConfirmDialog = () => {

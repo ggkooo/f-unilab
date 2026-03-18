@@ -2,21 +2,60 @@ import type { TvTicket, TvVideo } from './types';
 
 export const formatCounterLabel = (counterName: string) => counterName.replace(/^guiche_/i, '');
 
-export const getServiceBadgeColor = (serviceType: string): string => {
-    const normalized = serviceType.toLowerCase();
+type ServiceVariant = 'primary' | 'warning' | 'success';
 
-    // Red for Preferential services
+const getServiceVariant = (serviceType?: string): ServiceVariant => {
+    const normalized = serviceType?.toLowerCase() ?? '';
+
     if (normalized.includes('preferencial')) {
-        return '#EF4444'; // red-500
+        return 'warning';
     }
 
-    // Amber for Delivery/Pickup services
     if (normalized.includes('retirada') || normalized.includes('entrega')) {
-        return '#F59E0B'; // amber-500
+        return 'success';
     }
 
-    // Blue for general services (default)
-    return '#3B82F6'; // blue-500
+    return 'primary';
+};
+
+export const getServiceBadgeColor = (serviceType: string): string => {
+    const variant = getServiceVariant(serviceType);
+
+    if (variant === 'warning') {
+        return '#EF4444';
+    }
+
+    if (variant === 'success') {
+        return '#F59E0B';
+    }
+
+    return '#3B82F6';
+};
+
+export const getServicePanelTheme = (serviceType?: string) => {
+    const variant = getServiceVariant(serviceType);
+
+    if (variant === 'warning') {
+        return {
+            card: 'bg-red-50/70 border-red-400/90 neon-pulse-red',
+            aura: 'bg-red-100/50',
+            counterGradient: 'from-red-500 to-rose-500',
+        };
+    }
+
+    if (variant === 'success') {
+        return {
+            card: 'bg-amber-50/70 border-amber-400/90 neon-pulse-amber',
+            aura: 'bg-amber-100/50',
+            counterGradient: 'from-amber-500 to-yellow-500',
+        };
+    }
+
+    return {
+        card: 'bg-blue-50/70 border-blue-400/90 neon-pulse-blue',
+        aura: 'bg-blue-100/50',
+        counterGradient: 'from-blue-500 to-sky-500',
+    };
 };
 
 export const getTicketsSignature = (tickets: TvTicket[]) =>

@@ -6,14 +6,14 @@ export const getServiceBadgeClassName = (serviceType: string): string => {
     const normalized = serviceType.toLowerCase();
 
     if (normalized.includes('preferencial')) {
-        return 'bg-warning text-white';
+        return 'bg-red-500 text-white';
     }
 
     if (normalized.includes('retirada') || normalized.includes('entrega')) {
-        return 'bg-success text-white';
+        return 'bg-amber-500 text-white';
     }
 
-    return 'bg-slate-200 text-slate-700';
+    return 'bg-blue-500 text-white';
 };
 
 export const getWaitingTimeLabel = (timestamp: Date): string => {

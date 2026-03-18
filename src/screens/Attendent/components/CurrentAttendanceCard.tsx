@@ -1,6 +1,7 @@
 import React from 'react';
 import { CustomSelect } from '../../../components/ui/CustomSelect';
 import type { SelectOption, Ticket } from '../types';
+import { getServiceBadgeClassName } from '../utils';
 
 interface CurrentAttendanceCardProps {
     currentTicket: Ticket | null;
@@ -42,7 +43,7 @@ const CurrentAttendanceCard: React.FC<CurrentAttendanceCardProps> = ({
             {currentTicket ? (
                 <div className="animate-fade-in flex flex-col items-center">
                     <div className="text-6xl lg:text-8xl font-bold text-[#003B71] mb-4">{currentTicket.number}</div>
-                    <div className="bg-success text-white px-8 py-2 rounded-full text-xl font-bold mb-10 inline-block shadow-sm">
+                    <div className={`px-8 py-2 rounded-full text-xl font-bold mb-10 inline-block shadow-sm ${getServiceBadgeClassName(currentTicket.serviceType)}`}>
                         {currentTicket.serviceType}
                     </div>
                 </div>

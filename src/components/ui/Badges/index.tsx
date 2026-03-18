@@ -5,6 +5,7 @@ interface BadgeProps {
   children: React.ReactNode;
   size?: 'default' | 'hero';
   neonBorder?: boolean;
+  className?: string;
 }
 
 const sizeStyles: Record<NonNullable<BadgeProps['size']>, string> = {
@@ -12,7 +13,7 @@ const sizeStyles: Record<NonNullable<BadgeProps['size']>, string> = {
   hero: 'px-6 sm:px-8 py-3 sm:py-4 text-[clamp(1.2rem,2.2vw,3.6rem)] shadow-xl',
 };
 
-const Badge: React.FC<BadgeProps> = ({ color, children, size = 'default', neonBorder = false }) => {
+const Badge: React.FC<BadgeProps> = ({ color, children, size = 'default', neonBorder = false, className }) => {
   // Determine neon color based on color prop
   let neonColorClass = 'neon-pulse-blue';
   if (color.toLowerCase().includes('ef4444') || color === '#EF4444') {
@@ -23,7 +24,7 @@ const Badge: React.FC<BadgeProps> = ({ color, children, size = 'default', neonBo
 
   return (
   <span
-    className={`inline-block rounded-full text-white font-extrabold tracking-wide ${sizeStyles[size]} ${neonBorder ? `border-2 ${neonColorClass}` : ''}`}
+    className={`inline-flex items-center justify-center rounded-full text-white font-extrabold tracking-wide ${sizeStyles[size]} ${neonBorder ? `border-2 ${neonColorClass}` : ''} ${className ?? ''}`}
     style={{ background: color }}
   >
     {children}

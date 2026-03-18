@@ -43,3 +43,23 @@
 .neon-pulse-amber {
   animation: neonPulseAmber 1.9s ease-in-out infinite;
 }
+
+@keyframes badgeMarquee {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.badge-marquee-track {
+  display: inline-flex;
+  min-width: max-content;
+  animation: badgeMarquee 8s linear infinite;
+}
+
+.badge-marquee-text {
+  white-space: nowrap;
+  padding-right: 1.5rem;
+}

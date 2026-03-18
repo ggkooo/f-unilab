@@ -36,6 +36,8 @@ The frontend uses polling to keep operational screens synchronized with the back
 
 ## Screenshots
 
+Screenshots were refreshed to reflect the latest UI updates.
+
 ### Public Ticket Screen
 
 ![Public ticket screen](README-images/home-page.png)
@@ -74,6 +76,7 @@ The frontend uses polling to keep operational screens synchronized with the back
 ### Ticket Generation
 
 - Select service type.
+- Preferential service badges include 60+, Gestante, Criança de colo, Autista, and Deficiente.
 - Send ticket creation request to the API.
 - Show success/error feedback.
 
@@ -100,16 +103,18 @@ The frontend uses polling to keep operational screens synchronized with the back
 - Delete users.
 - Promote/demote admin privileges.
 - List/delete videos.
-- Upload new videos.
 - Generate attendance reports by date range.
 
 ### TV Screen
 
 - Display currently called ticket.
-- Display recent calls.
-- Fetch video playlist from API.
-- Load video binary via `GET /videos/{filename}` with `X-API-KEY`.
-- Rotate videos automatically.
+- Apply dynamic color theme (container + neon border) by service type.
+- Display the 3 most recent calls.
+- Use fixed-width recent-call badges with centered text and marquee loop for long service names.
+- Play videos from local assets in `public/assets/video`.
+- Force TV video playback without sound.
+- Play alert sound from `public/assets/sound/sound.mp3` when a ticket is newly called or recalled.
+- Keep TV layout fully visible in 100vh (header to footer) without page scroll.
 
 ## Routes
 
@@ -178,8 +183,6 @@ Variables documented in `.env.example`:
 VITE_API_BASE_URL=http://localhost:8000/api
 VITE_API_TICKETS_PATH=/tickets
 VITE_USERS_PATH=/users
-VITE_VIDEOS_PATH=/videos
-VITE_VIDEOS_UPLOAD_PATH=/videos/upload
 VITE_REPORT_PDF_PATH=/reports/attendances
 VITE_TV_RECENTLY_CALLED_PATH=/tickets/recently-called
 VITE_API_KEY=your-api-key-here
@@ -191,8 +194,6 @@ Description:
 - `VITE_API_BASE_URL`: API base URL.
 - `VITE_API_TICKETS_PATH`: base path for ticket resource.
 - `VITE_USERS_PATH`: users resource path.
-- `VITE_VIDEOS_PATH`: videos resource path.
-- `VITE_VIDEOS_UPLOAD_PATH`: video upload path.
 - `VITE_REPORT_PDF_PATH`: attendance report path.
 - `VITE_TV_RECENTLY_CALLED_PATH`: TV recent calls path.
 - `VITE_API_KEY`: key sent in `X-API-KEY` header.
@@ -283,7 +284,7 @@ Protected attendant routes send both headers:
 
 File: `src/services/adminService.ts`
 
-Includes user management, video upload/removal, and report generation.
+Includes user management, video listing/removal, and report generation.
 
 ### TV Operations
 
@@ -292,12 +293,15 @@ File: `src/services/tvService.ts`
 Operations:
 
 - `GET /tickets/recently-called`
-- `GET /videos`
-- `GET /videos/{filename}`
+
+Video source behavior:
+
+- TV videos are discovered from local public assets using Vite glob import (`/public/assets/video/**/*.mp4`).
+- Playback uses direct static URLs (`/assets/video/...`) with loop enabled.
 
 Important:
 
-- TV video binary is fetched manually to ensure `X-API-KEY` is sent with the request.
+- TV keeps polling recent calls from API and updates visual/sound alerts in real time.
 
 ## Authentication and Session
 
@@ -393,11 +397,17 @@ server {
 - verify `VITE_API_KEY`,
 - test endpoints directly with the same headers used by the app.
 
-### TV lists videos but does not play them
+### TV does not play local videos
 
-- confirm `GET /videos/{filename}` returns a valid binary,
-- verify `X-API-KEY` is accepted by this endpoint,
-- validate content type and file integrity from backend.
+- confirm files exist under `public/assets/video`,
+- verify file extension is supported (`.mp4`),
+- run `npm run build` and check if video assets are present in `dist/assets`.
+
+### TV alert sound does not play
+
+- confirm `public/assets/sound/sound.mp3` exists,
+- verify the TV browser/session allows media autoplay,
+- validate there is at least one ticket change (new call or recall) after the initial load.
 
 ### Protected routes redirect to login
 

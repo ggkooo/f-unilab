@@ -35,7 +35,7 @@ const ServiceTypeBadge = ({ serviceType, color }: ServiceTypeBadgeProps) => {
     }, [serviceType]);
 
     return (
-        <div className="w-1/2 min-w-[9rem]">
+        <div className="w-full">
             <Badge color={color} neonBorder={true} className="w-full px-3 sm:px-4 py-2 sm:py-2.5">
                 <div ref={containerRef} className="relative w-full overflow-hidden">
                     <span ref={measureRef} className="invisible absolute whitespace-nowrap">
@@ -60,12 +60,12 @@ const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) 
     const recentTickets = tickets.slice(0, 3);
 
     return (
-        <section className="flex-1 min-h-0 flex flex-col bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border border-slate-100 p-4 sm:p-5 lg:p-6 2xl:p-7 min-w-0">
-            <h3 className="text-[clamp(0.95rem,1.5vw,1.6rem)] font-bold text-[#003B71] mb-3 lg:mb-4 border-b-2 border-slate-100 pb-2 text-center">
+        <section className="flex-1 min-h-0 flex flex-col bg-white/90 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border border-slate-100 p-3 sm:p-4 lg:p-5 2xl:p-6 min-w-0 overflow-hidden">
+            <h3 className="text-[clamp(0.95rem,1.4vw,1.45rem)] font-bold text-[#003B71] mb-2 lg:mb-3 border-b-2 border-slate-100 pb-2 text-center">
                 Últimas Chamadas
             </h3>
 
-            <div className="flex flex-col gap-2 lg:gap-3 flex-1 min-h-0 overflow-y-auto pr-1">
+            <div className="grid grid-rows-3 gap-2 lg:gap-3 flex-1 min-h-0">
                 {isLoading ? (
                     <div className="text-[clamp(0.85rem,1.2vw,1.3rem)] text-slate-400">Carregando...</div>
                 ) : error ? (
@@ -76,7 +76,7 @@ const RecentCallsPanel = ({ tickets, isLoading, error }: RecentCallsPanelProps) 
                     recentTickets.map((ticket, index) => (
                         <div
                             key={ticket.id}
-                            className={`flex items-center justify-between gap-2 sm:gap-3 p-2.5 sm:p-3 lg:p-4 rounded-lg lg:rounded-xl transition-all duration-300 ${index === 0 ? 'bg-slate-50/80 scale-[1.01]' : 'bg-slate-50/40'}`}
+                            className={`min-h-0 h-full flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-2.5 lg:p-3 rounded-lg lg:rounded-xl transition-all duration-300 ${index === 0 ? 'bg-slate-50/80 scale-[1.01]' : 'bg-slate-50/40'}`}
                         >
                             <div className="w-1/2 min-w-0 max-w-1/2 flex items-center gap-3">
                                 <span className="text-[clamp(1.1rem,2.2vw,2.4rem)] font-bold text-slate-700 truncate leading-none">

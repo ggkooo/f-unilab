@@ -22,8 +22,24 @@ const Tv = () => {
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
     const alertAudioRef = useRef<HTMLAudioElement | null>(null);
     const previousTopTicketRef = useRef<TvTicket | null>(null);
+    const previousTopTicketSignatureRef = useRef('');
     const hasHydratedTicketsRef = useRef(false);
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    const getTicketAlertSignature = (ticket: TvTicket | null) => {
+        if (!ticket) {
+            return '';
+        }
+
+        return [
+            ticket.id,
+            ticket.key,
+            ticket.serviceType,
+            ticket.counterName,
+            ticket.updatedAt.getTime(),
+            ticket.calledAt?.getTime() ?? 0,
+        ].join(':');
+    };
 
     const playTicketAlert = () => {
         const audio = alertAudioRef.current;
@@ -32,37 +48,25 @@ const Tv = () => {
             return;
         }
 
+        // Some TV browsers keep stale media state; reset audio properties before every playback.
+        audio.pause();
         audio.currentTime = 0;
+        audio.muted = false;
+        audio.defaultMuted = false;
+        audio.volume = 1;
         void audio.play().catch(() => {
-            // Ignore autoplay blocks silently to avoid interrupting the TV screen flow.
+            // Fallback to a fresh instance in case the original audio element became blocked.
+            const fallbackAudio = new Audio('/assets/sound/sound.mp3');
+            fallbackAudio.preload = 'auto';
+            fallbackAudio.muted = false;
+            fallbackAudio.defaultMuted = false;
+            fallbackAudio.volume = 1;
+            fallbackAudio.currentTime = 0;
+
+            void fallbackAudio.play().catch(() => {
+                // Ignore autoplay blocks silently to avoid interrupting the TV screen flow.
+            });
         });
-    };
-
-    const shouldNotifyTicketChange = (previousTicket: TvTicket | null, nextTicket: TvTicket | null) => {
-        if (!nextTicket) {
-            return false;
-        }
-
-        if (!previousTicket) {
-            return true;
-        }
-
-        if (previousTicket.id !== nextTicket.id) {
-            return true;
-        }
-
-        const previousCalledAt = previousTicket.calledAt?.getTime() ?? 0;
-        const nextCalledAt = nextTicket.calledAt?.getTime() ?? 0;
-
-        if (previousTicket.updatedAt.getTime() !== nextTicket.updatedAt.getTime()) {
-            return true;
-        }
-
-        if (previousCalledAt !== nextCalledAt) {
-            return true;
-        }
-
-        return previousTicket.counterName !== nextTicket.counterName;
     };
 
     const refreshTickets = async (showLoading = false) => {
@@ -73,9 +77,13 @@ const Tv = () => {
         try {
             const nextTickets = await fetchRecentlyCalledTickets();
             const nextTopTicket = nextTickets[0] ?? null;
+            const nextTopTicketSignature = getTicketAlertSignature(nextTopTicket);
 
             if (hasHydratedTicketsRef.current) {
-                if (shouldNotifyTicketChange(previousTopTicketRef.current, nextTopTicket)) {
+                if (
+                    nextTopTicketSignature.length > 0
+                    && nextTopTicketSignature !== previousTopTicketSignatureRef.current
+                ) {
                     playTicketAlert();
                 }
             } else {
@@ -83,6 +91,7 @@ const Tv = () => {
             }
 
             previousTopTicketRef.current = nextTopTicket;
+            previousTopTicketSignatureRef.current = nextTopTicketSignature;
 
             setTicketsError(null);
             setTickets((previousTickets) => {
@@ -144,6 +153,9 @@ const Tv = () => {
     useEffect(() => {
         const audio = new Audio('/assets/sound/sound.mp3');
         audio.preload = 'auto';
+        audio.muted = false;
+        audio.defaultMuted = false;
+        audio.volume = 1;
         alertAudioRef.current = audio;
 
         void refreshTickets(true);

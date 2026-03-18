@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import React from 'react';
 import type { TvVideo } from '../types';
 
 interface VideoPlayerPanelProps {
@@ -25,9 +26,13 @@ const VideoPlayerPanel = ({ video, error, videoRef }: VideoPlayerPanelProps) => 
                     <span className="text-red-500 text-[clamp(1rem,1.2vw,1.4rem)] text-center px-6">{error}</span>
                 ) : video ? (
                     <video
-                        ref={videoRef}
+                        ref={(el) => {
+                            (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
+                            enforceSilentPlayback(el);
+                        }}
                         key={video.filename}
                         className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[200px] max-h-[44vh] 2xl:max-h-[46vh]"
+                        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
                         src={video.url}
                         autoPlay
                         muted
@@ -36,6 +41,7 @@ const VideoPlayerPanel = ({ video, error, videoRef }: VideoPlayerPanelProps) => 
                         onLoadedMetadata={(event) => enforceSilentPlayback(event.currentTarget)}
                         onPlay={(event) => enforceSilentPlayback(event.currentTarget)}
                         onVolumeChange={(event) => enforceSilentPlayback(event.currentTarget)}
+                        onPause={(event) => { void event.currentTarget.play(); }}
                     />
                 ) : (
                     <span className="text-slate-400 text-[clamp(1rem,1.2vw,1.4rem)] text-center">Nenhum vídeo disponível</span>

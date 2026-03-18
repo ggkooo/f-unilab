@@ -6,14 +6,23 @@ import Clock from '../../ui/Clock';
 const Header: React.FC = () => {
   const location = useLocation();
   const showClock = location.pathname === '/tv';
+  const headerSpacingClass = showClock
+    ? 'px-4 sm:px-5 lg:px-8 py-2 sm:py-2.5 xl:py-3'
+    : 'px-4 sm:px-6 lg:px-10 py-3 sm:py-4 xl:py-5';
+  const logoSizeClass = showClock
+    ? 'w-[clamp(100px,6.8vw,220px)] object-contain'
+    : 'w-[clamp(110px,8vw,260px)] object-contain';
+  const spacerSizeClass = showClock
+    ? 'w-[clamp(100px,6.8vw,220px)]'
+    : 'w-[clamp(110px,8vw,260px)]';
 
   return (
-    <header className="w-full bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-10 py-3 sm:py-4 xl:py-5 flex justify-between items-center shadow-sm">
+    <header className={`w-full bg-white border-b border-slate-200 flex justify-between items-center shadow-sm ${headerSpacingClass}`}>
       <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
         <img
           src={unilabLogo}
           alt="UNILAB Logo"
-          className="w-[clamp(110px,8vw,260px)] object-contain"
+          className={logoSizeClass}
         />
       </div>
 
@@ -21,7 +30,7 @@ const Header: React.FC = () => {
         {showClock ? <Clock /> : null}
       </div>
 
-      <div className="w-[clamp(110px,8vw,260px)]" />
+      <div className={spacerSizeClass} />
     </header>
   );
 };

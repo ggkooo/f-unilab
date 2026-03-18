@@ -18,7 +18,7 @@ const ServiceOptionsGrid: React.FC<ServiceOptionsGridProps> = ({
     return (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
             {options.map((service) => (
-                <div key={service.title} className={service.fullWidth ? 'sm:col-span-2' : undefined}>
+                <div key={service.title} className={service.fullWidth ? 'h-full sm:col-span-2' : 'h-full'}>
                     <ActionCard
                         icon={service.icon}
                         title={service.title}

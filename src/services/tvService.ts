@@ -11,12 +11,6 @@ interface ApiTvTicket {
     called_at?: string;
 }
 
-interface ApiTvVideo {
-    filename: string;
-    url: string;
-    created_at?: string;
-}
-
 type ApiErrorBody = {
     message?: string;
     error?: string;
@@ -25,7 +19,6 @@ type ApiErrorBody = {
 const DEFAULT_API_KEY = 'e15e7aaff2ec79683370eef2fdd01ec0c2ffe94706e73cca7062e026617cc2fb';
 const API_KEY = import.meta.env.VITE_API_KEY ?? apiConfig.apiKey ?? DEFAULT_API_KEY;
 const RECENTLY_CALLED_PATH = import.meta.env.VITE_TV_RECENTLY_CALLED_PATH ?? `${apiConfig.ticketsPath}/recently-called`;
-const VIDEOS_PATH = import.meta.env.VITE_VIDEOS_PATH ?? '/videos';
 
 const createTimeoutController = (timeoutMs: number) => {
     const controller = new AbortController();
@@ -102,12 +95,6 @@ const mapTicket = (ticket: ApiTvTicket): TvTicket => ({
     calledAt: ticket.called_at ? new Date(ticket.called_at) : undefined,
 });
 
-const mapVideo = (video: ApiTvVideo): TvVideo => ({
-    filename: video.filename,
-    url: video.url,
-    createdAt: video.created_at,
-});
-
 export const fetchRecentlyCalledTickets = async () => {
     const response = await request(RECENTLY_CALLED_PATH, { method: 'GET' }, 'Não foi possível carregar as senhas chamadas.');
     const data: unknown = await response.json();
@@ -119,23 +106,26 @@ export const fetchRecentlyCalledTickets = async () => {
     return (data as ApiTvTicket[]).map(mapTicket);
 };
 
-export const fetchTvVideos = async () => {
-    const response = await request(VIDEOS_PATH, { method: 'GET' }, 'Não foi possível carregar os vídeos da TV.');
-    const data: unknown = await response.json();
+export const fetchTvVideos = async (): Promise<TvVideo[]> => {
+    try {
+        // Import all .mp4 files from /public/assets/video/ using Vite's glob import
+        const videoModules = import.meta.glob('/public/assets/video/**/*.mp4', { eager: false });
+        
+        const videos: TvVideo[] = Object.entries(videoModules).map(([path]) => {
+            // Extract filename from path (e.g., '/public/assets/video/video.mp4' -> 'video.mp4')
+            const filename = path.split('/').pop() || '';
+            // Convert to relative URL for public assets (e.g., '/assets/video/video.mp4')
+            const url = path.replace('/public', '');
+            
+            return {
+                filename,
+                url,
+                createdAt: new Date().toISOString(),
+            };
+        });
 
-    if (!Array.isArray(data)) {
+        return videos.sort((a, b) => a.filename.localeCompare(b.filename));
+    } catch {
         return [];
     }
-
-    return (data as ApiTvVideo[]).map(mapVideo);
-};
-
-export const fetchTvVideoBlob = async (filename: string) => {
-    const response = await request(
-        `${VIDEOS_PATH}/${encodeURIComponent(filename)}`,
-        { method: 'GET' },
-        'Não foi possível carregar o vídeo selecionado.',
-    );
-
-    return response.blob();
 };

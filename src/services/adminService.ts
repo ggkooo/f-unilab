@@ -55,7 +55,6 @@ const REGISTER_PATH = import.meta.env.VITE_REGISTER_PATH ?? '/register';
 const MAKE_ADMIN_SUFFIX = '/make-admin';
 const REMOVE_ADMIN_SUFFIX = '/remove-admin';
 const VIDEOS_PATH = import.meta.env.VITE_VIDEOS_PATH ?? '/videos';
-const VIDEOS_UPLOAD_PATH = import.meta.env.VITE_VIDEOS_UPLOAD_PATH ?? '/videos/upload';
 const ATTENDANCE_REPORT_PATH = import.meta.env.VITE_REPORT_PDF_PATH ?? '/reports/attendances';
 
 type ApiErrorBody = {
@@ -215,21 +214,6 @@ export const fetchAdminVideos = async (accessToken?: string) => {
 
     const data: unknown = await response.json();
     return Array.isArray(data) ? (data as ApiVideo[]) : [];
-};
-
-export const uploadAdminVideo = async (file: File, accessToken?: string) => {
-    const formData = new FormData();
-    formData.append('video', file);
-
-    await request(
-        buildApiUrl(VIDEOS_UPLOAD_PATH),
-        {
-            method: 'POST',
-            headers: buildAuthHeaders(accessToken),
-            body: formData,
-        },
-        'Não foi possível enviar o vídeo.',
-    );
 };
 
 export const deleteAdminVideo = async (filename: string, accessToken?: string) => {

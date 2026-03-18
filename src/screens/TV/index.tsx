@@ -2,8 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Footer from '../../components/layout/Footer';
 import Header from '../../components/layout/Header';
-import Clock from '../../components/ui/Clock';
-import { fetchRecentlyCalledTickets, fetchTvVideoBlob, fetchTvVideos } from '../../services/tvService';
+import { fetchRecentlyCalledTickets, fetchTvVideos } from '../../services/tvService';
 import CurrentTicketPanel from './components/CurrentTicketPanel';
 import RecentCallsPanel from './components/RecentCallsPanel';
 import VideoPlayerPanel from './components/VideoPlayerPanel';
@@ -21,8 +20,6 @@ const Tv = () => {
     const [videos, setVideos] = useState<TvVideo[]>([]);
     const [videosError, setVideosError] = useState<string | null>(null);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-    const [videoReloadToken, setVideoReloadToken] = useState(0);
-    const [videoSource, setVideoSource] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const refreshTickets = async (showLoading = false) => {
@@ -108,72 +105,14 @@ const Tv = () => {
         };
     }, []);
 
-    useEffect(() => {
-        const currentVideo = videos[currentVideoIndex];
-
-        if (!currentVideo) {
-            setVideoSource(null);
-            return;
-        }
-
-        let isCancelled = false;
-        let objectUrl: string | null = null;
-
-        const loadVideo = async () => {
-            setVideoSource(null);
-
-            try {
-                const blob = await fetchTvVideoBlob(currentVideo.filename);
-
-                if (isCancelled) {
-                    return;
-                }
-
-                objectUrl = URL.createObjectURL(blob);
-                setVideosError(null);
-                setVideoSource(objectUrl);
-            } catch (error) {
-                if (isCancelled) {
-                    return;
-                }
-
-                setVideosError(error instanceof Error ? error.message : 'Falha ao carregar o vídeo atual.');
-                setVideoSource(null);
-            }
-        };
-
-        void loadVideo();
-
-        return () => {
-            isCancelled = true;
-
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl);
-            }
-        };
-    }, [currentVideoIndex, videoReloadToken, videos]);
-
-    const handleVideoEnded = () => {
-        if (videos.length <= 1) {
-            setVideoReloadToken((previous) => previous + 1);
-            return;
-        }
-
-        setCurrentVideoIndex((previous) => (previous + 1) % videos.length);
-    };
-
     return (
-        <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 min-h-dvh flex flex-col w-full overflow-hidden">
+        <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 h-dvh flex flex-col w-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 z-0">
                 <div className="absolute -top-32 -left-32 w-[40vw] h-[40vw] bg-blue-200 opacity-30 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 right-0 w-[30vw] h-[30vw] bg-blue-100 opacity-20 rounded-full blur-2xl animate-pulse" />
             </div>
 
             <Header />
-
-            <div className="z-10 flex justify-center mt-2 sm:mt-4 mb-2 px-4">
-                <Clock />
-            </div>
 
             <main className="flex-1 min-h-0 w-full grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] items-stretch justify-center p-3 sm:p-4 lg:p-6 2xl:p-8 gap-4 lg:gap-6 2xl:gap-8 z-10">
                 <CurrentTicketPanel ticket={tickets[0] ?? null} isLoading={isLoadingTickets} error={ticketsError} />
@@ -182,10 +121,8 @@ const Tv = () => {
                     <RecentCallsPanel tickets={tickets} isLoading={isLoadingTickets} error={ticketsError} />
                     <VideoPlayerPanel
                         video={videos[currentVideoIndex] ?? null}
-                        videoSource={videoSource}
                         error={videosError}
                         videoRef={videoRef}
-                        onVideoEnded={handleVideoEnded}
                     />
                 </div>
             </main>

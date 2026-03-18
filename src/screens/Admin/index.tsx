@@ -12,7 +12,6 @@ import {
     toggleUserAdminRole,
     type ApiUser,
     updateAdminUser,
-    uploadAdminVideo,
 } from '../../services/adminService';
 import AdminHero from './components/AdminHero';
 import ConfirmActionDialog from './components/ConfirmActionDialog';
@@ -41,7 +40,6 @@ const Admin: React.FC = () => {
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [userForm, setUserForm] = useState<UserFormState>(emptyUserForm);
     const [registerUserForm, setRegisterUserForm] = useState<RegisterUserFormState>(emptyRegisterUserForm);
-    const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
@@ -49,7 +47,6 @@ const Admin: React.FC = () => {
     const [isLoadingVideos, setIsLoadingVideos] = useState(true);
     const [isSavingUser, setIsSavingUser] = useState(false);
     const [isCreatingUser, setIsCreatingUser] = useState(false);
-    const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isDownloadingReport, setIsDownloadingReport] = useState(false);
     const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
     const [togglingAdminId, setTogglingAdminId] = useState<number | null>(null);
@@ -59,7 +56,6 @@ const Admin: React.FC = () => {
     const [videosError, setVideosError] = useState<string | null>(null);
     const [reportError, setReportError] = useState<string | null>(null);
     const [userSuccess, setUserSuccess] = useState<string | null>(null);
-    const [videoSuccess, setVideoSuccess] = useState<string | null>(null);
     const [reportSuccess, setReportSuccess] = useState<string | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
     const [isConfirmingAction, setIsConfirmingAction] = useState(false);
@@ -290,46 +286,13 @@ const Admin: React.FC = () => {
         }
     };
 
-    const handleUploadVideo = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!selectedVideoFile) {
-            setVideosError('Selecione um arquivo de vídeo para enviar.');
-            return;
-        }
-
-        setIsUploadingVideo(true);
-        setVideosError(null);
-        setVideoSuccess(null);
-
-        try {
-            await uploadAdminVideo(selectedVideoFile, accessToken);
-
-            setSelectedVideoFile(null);
-            const fileInput = document.getElementById('video-upload-input') as HTMLInputElement | null;
-
-            if (fileInput) {
-                fileInput.value = '';
-            }
-
-            setVideoSuccess('Vídeo enviado com sucesso.');
-            await fetchVideos();
-        } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao enviar vídeo.');
-        } finally {
-            setIsUploadingVideo(false);
-        }
-    };
-
     const deleteVideo = async (filename: string) => {
         setDeletingVideoName(filename);
         setVideosError(null);
-        setVideoSuccess(null);
 
         try {
             await deleteAdminVideo(filename, accessToken);
 
-            setVideoSuccess('Vídeo removido com sucesso.');
             await fetchVideos();
         } catch (error) {
             setVideosError(error instanceof Error ? error.message : 'Falha ao remover vídeo.');
@@ -444,15 +407,10 @@ const Admin: React.FC = () => {
 
                         <VideosSection
                             videos={videos}
-                            selectedVideoFile={selectedVideoFile}
                             videosError={videosError}
-                            videoSuccess={videoSuccess}
                             isLoadingVideos={isLoadingVideos}
-                            isUploadingVideo={isUploadingVideo}
                             deletingVideoName={deletingVideoName}
                             onRefreshVideos={fetchVideos}
-                            onVideoFileChange={setSelectedVideoFile}
-                            onUploadVideo={handleUploadVideo}
                             onDeleteVideo={handleDeleteVideo}
                         />
                     </div>

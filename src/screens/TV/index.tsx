@@ -1,16 +1,16 @@
 
 import { useEffect, useRef, useState } from 'react';
-import Footer from '../../components/layout/Footer';
 import Header from '../../components/layout/Header';
-import { fetchRecentlyCalledTickets, fetchTvVideos } from '../../services/tvService';
+import { fetchRecentlyCalledTickets, fetchTvMedia } from '../../services/tvService';
 import CurrentTicketPanel from './components/CurrentTicketPanel';
 import RecentCallsPanel from './components/RecentCallsPanel';
 import VideoPlayerPanel from './components/VideoPlayerPanel';
-import type { TvTicket, TvVideo } from './types';
-import { getTicketsSignature, getVideosSignature } from './utils';
+import type { TvMedia, TvTicket } from './types';
+import { getMediaSignature, getTicketsSignature } from './utils';
 
 const TICKETS_REFRESH_INTERVAL_MS = 5000;
-const VIDEOS_REFRESH_INTERVAL_MS = 30000;
+const MEDIA_REFRESH_INTERVAL_MS = 30000;
+const IMAGE_DISPLAY_DURATION_MS = 10000;
 const VIDEO_SILENCE_ENFORCE_INTERVAL_MS = 1000;
 
 type HtmlVideoWithAudioTracks = HTMLVideoElement & {
@@ -47,9 +47,9 @@ const Tv = () => {
     const [isLoadingTickets, setIsLoadingTickets] = useState(true);
     const [ticketsError, setTicketsError] = useState<string | null>(null);
 
-    const [videos, setVideos] = useState<TvVideo[]>([]);
-    const [videosError, setVideosError] = useState<string | null>(null);
-    const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+    const [mediaItems, setMediaItems] = useState<TvMedia[]>([]);
+    const [mediaError, setMediaError] = useState<string | null>(null);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const alertAudioRef = useRef<HTMLAudioElement | null>(null);
     const previousTopTicketRef = useRef<TvTicket | null>(null);
     const previousTopTicketSignatureRef = useRef('');
@@ -57,6 +57,16 @@ const Tv = () => {
     const mediaUnlockedRef = useRef(false);
     const pendingAlertPlaybackRef = useRef(false);
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    const advanceToNextMedia = () => {
+        setCurrentMediaIndex((previousIndex) => {
+            if (mediaItems.length <= 1) {
+                return 0;
+            }
+
+            return (previousIndex + 1) % mediaItems.length;
+        });
+    };
 
     const getTicketAlertSignature = (ticket: TvTicket | null) => {
         if (!ticket) {
@@ -153,36 +163,36 @@ const Tv = () => {
         }
     };
 
-    const refreshVideos = async () => {
+    const refreshMedia = async () => {
         try {
-            const nextVideos = await fetchTvVideos();
+            const nextMedia = await fetchTvMedia();
 
-            setVideosError(null);
-            setVideos((previousVideos) => {
-                if (getVideosSignature(previousVideos) === getVideosSignature(nextVideos)) {
-                    return previousVideos;
+            setMediaError(null);
+            setMediaItems((previousMedia) => {
+                if (getMediaSignature(previousMedia) === getMediaSignature(nextMedia)) {
+                    return previousMedia;
                 }
 
-                return nextVideos;
+                return nextMedia;
             });
 
-            setCurrentVideoIndex((previousIndex) => {
-                if (nextVideos.length === 0) {
+            setCurrentMediaIndex((previousIndex) => {
+                if (nextMedia.length === 0) {
                     return 0;
                 }
 
-                return previousIndex >= nextVideos.length ? 0 : previousIndex;
+                return previousIndex >= nextMedia.length ? 0 : previousIndex;
             });
         } catch (error) {
-            setVideosError(error instanceof Error ? error.message : 'Falha ao carregar os vídeos da TV.');
-            setVideos((previousVideos) => {
-                if (previousVideos.length === 0) {
-                    return previousVideos;
+            setMediaError(error instanceof Error ? error.message : 'Falha ao carregar as mídias da TV.');
+            setMediaItems((previousMedia) => {
+                if (previousMedia.length === 0) {
+                    return previousMedia;
                 }
 
                 return [];
             });
-            setCurrentVideoIndex(0);
+            setCurrentMediaIndex(0);
         }
     };
 
@@ -195,19 +205,19 @@ const Tv = () => {
         alertAudioRef.current = audio;
 
         void refreshTickets(true);
-        void refreshVideos();
+        void refreshMedia();
 
         const ticketsInterval = window.setInterval(() => {
             void refreshTickets();
         }, TICKETS_REFRESH_INTERVAL_MS);
 
-        const videosInterval = window.setInterval(() => {
-            void refreshVideos();
-        }, VIDEOS_REFRESH_INTERVAL_MS);
+        const mediaInterval = window.setInterval(() => {
+            void refreshMedia();
+        }, MEDIA_REFRESH_INTERVAL_MS);
 
         return () => {
             window.clearInterval(ticketsInterval);
-            window.clearInterval(videosInterval);
+            window.clearInterval(mediaInterval);
 
             if (alertAudioRef.current) {
                 alertAudioRef.current.pause();
@@ -272,7 +282,23 @@ const Tv = () => {
         return () => {
             window.clearInterval(intervalId);
         };
-    }, [currentVideoIndex, videos]);
+    }, [currentMediaIndex, mediaItems]);
+
+    useEffect(() => {
+        const currentMedia = mediaItems[currentMediaIndex];
+
+        if (currentMedia?.type !== 'image' || mediaItems.length <= 1) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            advanceToNextMedia();
+        }, IMAGE_DISPLAY_DURATION_MS);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [currentMediaIndex, mediaItems]);
 
     return (
         <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 text-slate-800 h-screen max-h-screen flex flex-col w-full overflow-hidden">
@@ -291,16 +317,14 @@ const Tv = () => {
                 <div className="min-h-0 min-w-0 overflow-hidden flex flex-col gap-4 lg:gap-6 2xl:gap-8">
                     <RecentCallsPanel tickets={tickets} isLoading={isLoadingTickets} error={ticketsError} />
                     <VideoPlayerPanel
-                        video={videos[currentVideoIndex] ?? null}
-                        error={videosError}
+                        media={mediaItems[currentMediaIndex] ?? null}
+                        hasMultipleItems={mediaItems.length > 1}
+                        error={mediaError}
                         videoRef={videoRef}
+                        onVideoEnded={advanceToNextMedia}
                     />
                 </div>
             </main>
-
-            <div className="shrink-0">
-                <Footer />
-            </div>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import type { TvTicket, TvVideo } from './types';
+import type { TvMedia, TvTicket } from './types';
 
 export const formatCounterLabel = (counterName: string) => counterName.replace(/^guiche_/i, '');
 
@@ -61,5 +61,5 @@ export const getServicePanelTheme = (serviceType?: string) => {
 export const getTicketsSignature = (tickets: TvTicket[]) =>
     tickets.map((ticket) => `${ticket.id}:${ticket.updatedAt.getTime()}:${ticket.counterName}`).join('|');
 
-export const getVideosSignature = (videos: TvVideo[]) =>
-    videos.map((video) => `${video.filename}:${video.createdAt ?? ''}`).join('|');
+export const getMediaSignature = (mediaItems: TvMedia[]) =>
+    mediaItems.map((media) => `${media.type}:${media.filename}:${media.url}:${media.createdAt ?? ''}`).join('|');

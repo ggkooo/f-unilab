@@ -1,18 +1,20 @@
 import type { RefObject } from 'react';
 import React from 'react';
-import type { TvVideo } from '../types';
+import type { TvMedia } from '../types';
 
 interface VideoPlayerPanelProps {
-    video: TvVideo | null;
+    media: TvMedia | null;
+    hasMultipleItems: boolean;
     error: string | null;
     videoRef: RefObject<HTMLVideoElement | null>;
+    onVideoEnded: () => void;
 }
 
 type HtmlVideoWithAudioTracks = HTMLVideoElement & {
     audioTracks?: ArrayLike<{ enabled: boolean }>;
 };
 
-const VideoPlayerPanel = ({ video, error, videoRef }: VideoPlayerPanelProps) => {
+const VideoPlayerPanel = ({ media, hasMultipleItems, error, videoRef, onVideoEnded }: VideoPlayerPanelProps) => {
     const enforceSilentPlayback = (element: HTMLVideoElement | null) => {
         if (!element) {
             return;
@@ -43,27 +45,39 @@ const VideoPlayerPanel = ({ video, error, videoRef }: VideoPlayerPanelProps) => 
             <div className="w-full bg-blue-100/40 rounded-xl lg:rounded-2xl shadow-inner p-2 sm:p-2.5 flex justify-center items-center border border-blue-200 h-full min-h-0">
                 {error ? (
                     <span className="text-red-500 text-[clamp(1rem,1.2vw,1.4rem)] text-center px-6">{error}</span>
-                ) : video ? (
+                ) : media?.type === 'video' ? (
                     <video
                         ref={(el) => {
                             (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el;
                             enforceSilentPlayback(el);
                         }}
-                        key={video.filename}
+                        key={media.filename}
                         className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[200px] max-h-[44vh] 2xl:max-h-[46vh]"
                         style={{ transform: 'translateZ(0)', willChange: 'transform' }}
-                        src={video.url}
+                        src={media.url}
                         autoPlay
                         muted
-                        loop
+                        loop={!hasMultipleItems}
                         playsInline
                         onLoadedMetadata={(event) => enforceSilentPlayback(event.currentTarget)}
                         onPlay={(event) => enforceSilentPlayback(event.currentTarget)}
                         onVolumeChange={(event) => enforceSilentPlayback(event.currentTarget)}
-                        onPause={(event) => { void event.currentTarget.play(); }}
+                        onEnded={onVideoEnded}
+                        onPause={(event) => {
+                            if (!hasMultipleItems) {
+                                void event.currentTarget.play();
+                            }
+                        }}
+                    />
+                ) : media?.type === 'image' ? (
+                    <img
+                        key={media.filename}
+                        src={media.url}
+                        alt={media.filename}
+                        className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[200px] max-h-[44vh] 2xl:max-h-[46vh]"
                     />
                 ) : (
-                    <span className="text-slate-400 text-[clamp(1rem,1.2vw,1.4rem)] text-center">Nenhum vídeo disponível</span>
+                    <span className="text-slate-400 text-[clamp(1rem,1.2vw,1.4rem)] text-center">Nenhuma mídia disponível</span>
                 )}
             </div>
         </div>

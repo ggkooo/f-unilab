@@ -1,5 +1,5 @@
 import { apiConfig, buildApiUrl } from './apiConfig';
-import type { TvTicket, TvVideo } from '../screens/TV/types';
+import type { TvMedia, TvMediaType, TvTicket } from '../screens/TV/types';
 
 interface ApiTvTicket {
     id: number;
@@ -95,6 +95,15 @@ const mapTicket = (ticket: ApiTvTicket): TvTicket => ({
     calledAt: ticket.called_at ? new Date(ticket.called_at) : undefined,
 });
 
+const buildPublicAssetUrl = (path: string) => path.replace('/public', '');
+
+const buildMediaEntry = (path: string, type: TvMediaType): TvMedia => ({
+    filename: path.split('/').pop() || '',
+    url: buildPublicAssetUrl(path),
+    type,
+    createdAt: new Date().toISOString(),
+});
+
 export const fetchRecentlyCalledTickets = async () => {
     const response = await request(RECENTLY_CALLED_PATH, { method: 'GET' }, 'Não foi possível carregar as senhas chamadas.');
     const data: unknown = await response.json();
@@ -106,25 +115,17 @@ export const fetchRecentlyCalledTickets = async () => {
     return (data as ApiTvTicket[]).map(mapTicket);
 };
 
-export const fetchTvVideos = async (): Promise<TvVideo[]> => {
+export const fetchTvMedia = async (): Promise<TvMedia[]> => {
     try {
-        // Import all .mp4 files from /public/assets/video/ using Vite's glob import
-        const videoModules = import.meta.glob('/public/assets/video/**/*.mp4', { eager: false });
-        
-        const videos: TvVideo[] = Object.entries(videoModules).map(([path]) => {
-            // Extract filename from path (e.g., '/public/assets/video/video.mp4' -> 'video.mp4')
-            const filename = path.split('/').pop() || '';
-            // Convert to relative URL for public assets (e.g., '/assets/video/video.mp4')
-            const url = path.replace('/public', '');
-            
-            return {
-                filename,
-                url,
-                createdAt: new Date().toISOString(),
-            };
-        });
+        const videoModules = import.meta.glob('/public/assets/video/**/*.{mp4,webm,ogg,mov,m4v}', { eager: false });
+        const imageModules = import.meta.glob('/public/assets/img/tv/**/*.{png,jpg,jpeg,webp,gif}', { eager: false });
 
-        return videos.sort((a, b) => a.filename.localeCompare(b.filename));
+        const mediaItems = [
+            ...Object.keys(videoModules).map((path) => buildMediaEntry(path, 'video')),
+            ...Object.keys(imageModules).map((path) => buildMediaEntry(path, 'image')),
+        ];
+
+        return mediaItems.sort((firstItem, secondItem) => firstItem.filename.localeCompare(secondItem.filename));
     } catch {
         return [];
     }

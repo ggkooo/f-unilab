@@ -8,8 +8,11 @@ export interface TvTicket {
     calledAt?: Date;
 }
 
-export interface TvVideo {
+export type TvMediaType = 'video' | 'image';
+
+export interface TvMedia {
     filename: string;
     url: string;
+    type: TvMediaType;
     createdAt?: string;
 }

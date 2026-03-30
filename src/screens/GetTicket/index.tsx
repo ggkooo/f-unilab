@@ -51,12 +51,12 @@ const GetTicket: React.FC = () => {
     };
 
     return (
-        <Layout>
-            <section className="relative w-full">
+        <Layout contentClassName="mx-auto flex w-full max-w-[1180px] flex-grow flex-col justify-center px-4 py-4 sm:w-[96%] sm:px-5 sm:py-5 md:px-6 md:py-6 lg:w-[94%] lg:px-0 lg:py-8" showHeader={false}>
+            <section className="relative w-full overflow-hidden">
                 <div className="pointer-events-none absolute -left-10 -top-8 h-40 w-40 rounded-full bg-blue-100/60 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-12 right-0 h-44 w-44 rounded-full bg-emerald-100/60 blur-3xl" />
 
-                <div className="relative rounded-[2rem] border border-white/80 bg-gradient-to-br from-white via-white to-slate-100/80 p-5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)] sm:p-7 md:p-8">
+                <div className="relative rounded-[2rem] border border-white/80 bg-gradient-to-br from-white via-white to-slate-100/80 p-4 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.35)] sm:p-5 md:p-6 lg:p-8">
                     <GetTicketHero />
 
                     {feedback && feedbackType && (

@@ -45,12 +45,12 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant,
     return (
         <button
             onClick={onClick}
-            className={`group relative flex h-full min-h-[18rem] w-full flex-col rounded-3xl border p-5 text-left transition-all duration-300 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 sm:p-6 ${styles.bg} ${styles.card} ${styles.ring}`}
+            className={`group relative flex h-full min-h-[14rem] w-full flex-col rounded-3xl border p-4 text-left transition-all duration-300 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 sm:min-h-[15rem] sm:p-5 xl:min-h-[18rem] xl:p-6 ${styles.bg} ${styles.card} ${styles.ring}`}
         >
             <div className="flex flex-1 flex-col">
-                <div className="mb-4 flex items-start justify-between gap-4">
+                <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4 sm:gap-4">
                     <div className="flex items-center gap-3">
-                        <span className={`material-icons-outlined flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-3xl sm:h-16 sm:w-16 sm:text-4xl ${styles.icon}`}>
+                        <span className={`material-icons-outlined flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-3xl sm:h-14 sm:w-14 sm:text-3xl xl:h-16 xl:w-16 xl:text-4xl ${styles.icon}`}>
                             {icon}
                         </span>
 
@@ -80,12 +80,12 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant,
                         arrow_forward
                     </span>
                 </div>
-                <span className="text-2xl font-semibold leading-tight text-slate-900 sm:text-[1.75rem]">{title}</span>
+                <span className="text-[1.6rem] font-semibold leading-tight text-slate-900 sm:text-[1.7rem] xl:text-[1.75rem]">{title}</span>
                 {subtitle && (
-                    <span className="mt-2 text-sm font-medium leading-relaxed text-slate-500 sm:text-base">{subtitle}</span>
+                    <span className="mt-2 text-sm font-medium leading-relaxed text-slate-500 sm:text-[0.95rem] xl:text-base">{subtitle}</span>
                 )}
             </div>
-            <span className="mt-5 text-sm font-semibold uppercase tracking-wide text-slate-400">Toque para continuar</span>
+            <span className="mt-4 text-sm font-semibold uppercase tracking-wide text-slate-400 xl:mt-5">Toque para continuar</span>
         </button>
     );
 };

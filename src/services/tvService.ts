@@ -1,4 +1,6 @@
 import { apiConfig, buildApiUrl } from './apiConfig';
+import type { UnilabLocation } from '../locations';
+import { withLocationQuery } from '../locations';
 import type { TvMedia, TvMediaType, TvTicket } from '../screens/TV/types';
 
 interface ApiTvTicket {
@@ -104,8 +106,17 @@ const buildMediaEntry = (path: string, type: TvMediaType): TvMedia => ({
     createdAt: new Date().toISOString(),
 });
 
-export const fetchRecentlyCalledTickets = async () => {
-    const response = await request(RECENTLY_CALLED_PATH, { method: 'GET' }, 'Não foi possível carregar as senhas chamadas.');
+export const fetchRecentlyCalledTickets = async (location: UnilabLocation) => {
+    const response = await request(
+        withLocationQuery(RECENTLY_CALLED_PATH, location),
+        {
+            method: 'GET',
+            headers: {
+                'X-UNILAB-LOCATION': location,
+            },
+        },
+        'Não foi possível carregar as senhas chamadas.',
+    );
     const data: unknown = await response.json();
 
     if (!Array.isArray(data)) {

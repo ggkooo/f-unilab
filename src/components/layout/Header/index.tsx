@@ -5,7 +5,7 @@ import Clock from '../../ui/Clock';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const showClock = location.pathname === '/tv';
+  const showClock = location.pathname.endsWith('/tv');
   const headerSpacingClass = showClock
     ? 'px-4 sm:px-5 lg:px-8 py-2 sm:py-2.5 xl:py-3'
     : 'px-4 sm:px-6 lg:px-10 py-3 sm:py-4 xl:py-5';

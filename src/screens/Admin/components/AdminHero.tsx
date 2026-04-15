@@ -3,10 +3,11 @@ import React from 'react';
 interface AdminHeroProps {
     administratorName: string;
     loginLabel: string;
+    canManage: boolean;
     onLogout: () => void;
 }
 
-const AdminHero: React.FC<AdminHeroProps> = ({ administratorName, loginLabel, onLogout }) => {
+const AdminHero: React.FC<AdminHeroProps> = ({ administratorName, loginLabel, canManage, onLogout }) => {
     return (
         <div className="mb-8 rounded-[2rem] border border-slate-200 bg-white p-8 shadow-xl lg:p-10">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -16,7 +17,9 @@ const AdminHero: React.FC<AdminHeroProps> = ({ administratorName, loginLabel, on
                     </span>
                     <h1 className="mt-3 text-3xl font-bold text-slate-900 lg:text-4xl">Painel Administrativo</h1>
                     <p className="mt-2 max-w-3xl text-base text-slate-500 lg:text-lg">
-                        Gerencie usuários, vídeos institucionais e exportações em PDF sem sair da aplicação.
+                        {canManage
+                            ? 'Gerencie usuários e consulte relatórios de atendimento sem sair da aplicação.'
+                            : 'Seu perfil possui acesso de consulta para exportação de relatórios em PDF.'}
                     </p>
                 </div>
 

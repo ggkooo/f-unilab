@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import GetTicket from './screens/GetTicket';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -7,6 +7,15 @@ import Attendant from './screens/Attendent';
 import Login from './screens/Login';
 import Admin from './screens/Admin';
 import Tv from './screens/TV';
+import LocationRouteGuard from './locations/LocationRouteGuard';
+import {
+  DEFAULT_UNILAB_LOCATION,
+  buildLocationAdminPath,
+  buildLocationAttendantPath,
+  buildLocationHomePath,
+  buildLocationLoginPath,
+  buildLocationTvPath,
+} from './locations';
 
 
 function App() {
@@ -55,25 +64,56 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<GetTicket />} />
-        <Route path="/tv" element={<Tv />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to={buildLocationHomePath(DEFAULT_UNILAB_LOCATION)} replace />} />
+        <Route path="/tv" element={<Navigate to={buildLocationTvPath(DEFAULT_UNILAB_LOCATION)} replace />} />
+        <Route path="/login" element={<Navigate to={buildLocationLoginPath(DEFAULT_UNILAB_LOCATION)} replace />} />
+        <Route path="/attendent" element={<Navigate to={buildLocationAttendantPath(DEFAULT_UNILAB_LOCATION)} replace />} />
+        <Route path="/admin" element={<Navigate to={buildLocationAdminPath(DEFAULT_UNILAB_LOCATION)} replace />} />
         <Route
-          path="/attendent"
+          path="/unilab/:location"
           element={(
-            <ProtectedRoute>
-              <Attendant />
-            </ProtectedRoute>
+            <LocationRouteGuard>
+              <GetTicket />
+            </LocationRouteGuard>
           )}
         />
         <Route
-          path="/admin"
+          path="/unilab/:location/tv"
           element={(
-            <ProtectedRoute requireAdmin>
-              <Admin />
-            </ProtectedRoute>
+            <LocationRouteGuard>
+              <Tv />
+            </LocationRouteGuard>
           )}
         />
+        <Route
+          path="/unilab/:location/login"
+          element={(
+            <LocationRouteGuard>
+              <Login />
+            </LocationRouteGuard>
+          )}
+        />
+        <Route
+          path="/unilab/:location/attendent"
+          element={(
+            <LocationRouteGuard>
+              <ProtectedRoute>
+                <Attendant />
+              </ProtectedRoute>
+            </LocationRouteGuard>
+          )}
+        />
+        <Route
+          path="/unilab/:location/admin"
+          element={(
+            <LocationRouteGuard>
+              <ProtectedRoute requireAdmin>
+                <Admin />
+              </ProtectedRoute>
+            </LocationRouteGuard>
+          )}
+        />
+        <Route path="*" element={<Navigate to={buildLocationHomePath(DEFAULT_UNILAB_LOCATION)} replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -4,16 +4,17 @@ import Layout from '../../components/layout/Layout';
 import { clearAuthSession, getAccessToken, getAuthSession } from '../../auth/session';
 import { buildLocationLoginPath } from '../../locations';
 import {
+    createPrinterSettings,
     deleteAdminUser,
     fetchAdminUsers,
     fetchAdminVideos,
     fetchAttendanceReport,
     fetchPrinterSettings,
     registerAdminUser,
-    savePrinterSettings,
     toggleUserAdminRole,
     type ApiUser,
-    type PrinterConnectionType,
+    type PrinterSettingsResponse,
+    updatePrinterSettings,
     updateAdminUser,
 } from '../../services/adminService';
 import AdminHero from './components/AdminHero';
@@ -24,13 +25,68 @@ import PrinterSettingsCard from './components/PrinterSettingsCard';
 import UsersSection from './components/UsersSection';
 import { createAttendanceReportPdf } from './reportPdf';
 import {
+    createEmptyPrinterForm,
     emptyRegisterUserForm,
     emptyUserForm,
     type ConfirmDialogConfig,
+    type PrinterFormState,
     type RegisterUserFormState,
     type UserFormState,
 } from './types';
 import { formatLoginLabel } from './utils';
+
+type ManagedPrinterForm = {
+    id: number;
+    form: PrinterFormState;
+};
+
+const mapPrinterSettingsToForm = (settings: PrinterSettingsResponse): PrinterFormState => ({
+    name: settings.name ?? '',
+    enabled: settings.enabled ?? true,
+    connectionType: settings.connection_type ?? 'network',
+    host: settings.host ?? '',
+    port: String(settings.port ?? 9100),
+    sharePath: settings.share_path ?? '',
+    profile: settings.profile ?? 'simple',
+    header: settings.header ?? 'SENHA DE ATENDIMENTO',
+});
+
+const validatePrinterForm = (form: PrinterFormState) => {
+    if (!form.name.trim()) {
+        return 'Informe um nome para a impressora.';
+    }
+
+    if (form.connectionType === 'network' && !form.host.trim()) {
+        return 'Host e obrigatorio para impressora de rede.';
+    }
+
+    if (form.connectionType === 'shared_windows' && !form.sharePath.trim()) {
+        return 'share_path e obrigatorio para impressora compartilhada no Windows.';
+    }
+
+    const normalizedPort = Number(form.port || '9100');
+
+    if (form.connectionType === 'network' && (!Number.isFinite(normalizedPort) || normalizedPort <= 0)) {
+        return 'Informe uma porta valida para impressora de rede.';
+    }
+
+    return null;
+};
+
+const buildPrinterPayload = (form: PrinterFormState) => {
+    const normalizedPort = Number(form.port || '9100');
+
+    return {
+        name: form.name.trim(),
+        enabled: form.enabled,
+        connection_type: form.connectionType,
+        host: form.connectionType === 'network' ? form.host.trim() : undefined,
+        port: form.connectionType === 'network' ? normalizedPort : undefined,
+        share_path: form.connectionType === 'shared_windows' ? form.sharePath.trim() : undefined,
+        profile: form.profile.trim() || 'simple',
+        header: form.header.trim() || 'SENHA DE ATENDIMENTO',
+    };
+};
 
 const Admin: React.FC = () => {
     const navigate = useNavigate();
@@ -47,31 +103,25 @@ const Admin: React.FC = () => {
     const [registerUserForm, setRegisterUserForm] = useState<RegisterUserFormState>(emptyRegisterUserForm);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [printerForm, setPrinterForm] = useState({
-        enabled: true,
-        connectionType: 'network' as PrinterConnectionType,
-        host: '',
-        port: '9100',
-        sharePath: '',
-        profile: 'simple',
-        header: 'SENHA DE ATENDIMENTO',
-    });
+    const [printerForms, setPrinterForms] = useState<ManagedPrinterForm[]>([]);
+    const [printerForm, setPrinterForm] = useState<PrinterFormState>(createEmptyPrinterForm());
+    const [editingPrinterId, setEditingPrinterId] = useState<number | null>(null);
 
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [isSavingUser, setIsSavingUser] = useState(false);
     const [isCreatingUser, setIsCreatingUser] = useState(false);
     const [isDownloadingReport, setIsDownloadingReport] = useState(false);
     const [isLoadingPrinterSettings, setIsLoadingPrinterSettings] = useState(false);
-    const [isSavingPrinterSettings, setIsSavingPrinterSettings] = useState(false);
+    const [isSavingPrinterForm, setIsSavingPrinterForm] = useState(false);
     const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
     const [togglingAdminId, setTogglingAdminId] = useState<number | null>(null);
 
     const [usersError, setUsersError] = useState<string | null>(null);
     const [reportError, setReportError] = useState<string | null>(null);
     const [printerError, setPrinterError] = useState<string | null>(null);
+    const [printerSuccess, setPrinterSuccess] = useState<string | null>(null);
     const [userSuccess, setUserSuccess] = useState<string | null>(null);
     const [reportSuccess, setReportSuccess] = useState<string | null>(null);
-    const [printerSuccess, setPrinterSuccess] = useState<string | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
     const [isConfirmingAction, setIsConfirmingAction] = useState(false);
 
@@ -156,15 +206,7 @@ const Admin: React.FC = () => {
         try {
             const settings = await fetchPrinterSettings(accessToken);
 
-            setPrinterForm({
-                enabled: settings.enabled ?? true,
-                connectionType: settings.connection_type ?? 'network',
-                host: settings.host ?? '',
-                port: String(settings.port ?? 9100),
-                sharePath: settings.share_path ?? '',
-                profile: settings.profile ?? 'simple',
-                header: settings.header ?? 'SENHA DE ATENDIMENTO',
-            });
+            setPrinterForms(settings.data.map((item) => ({ id: item.id, form: mapPrinterSettingsToForm(item) })));
         } catch (error) {
             setPrinterError(error instanceof Error ? error.message : 'Falha ao carregar configuracao da impressora.');
         } finally {
@@ -189,63 +231,72 @@ const Admin: React.FC = () => {
         setSelectedUserId(null);
         syncUserForm(null);
         setRegisterUserForm(emptyRegisterUserForm);
+        setPrinterForms([]);
+        setPrinterForm(createEmptyPrinterForm());
+        setEditingPrinterId(null);
         setIsLoadingUsers(false);
     }, [hasAdminPanelAccess, isSuperAdmin]);
 
-    const handlePrinterSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handlePrinterFieldChange = <K extends keyof PrinterFormState>(field: K, value: PrinterFormState[K]) => {
+        setPrinterForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+        setPrinterError(null);
+        setPrinterSuccess(null);
+    };
 
+    const handleEditPrinter = (printerId: number) => {
+        const selectedPrinter = printerForms.find((printer) => printer.id === printerId);
+
+        if (!selectedPrinter) {
+            return;
+        }
+
+        setEditingPrinterId(printerId);
+        setPrinterForm(selectedPrinter.form);
+        setPrinterError(null);
+        setPrinterSuccess(null);
+    };
+
+    const handleCancelPrinterEdit = () => {
+        setEditingPrinterId(null);
+        setPrinterForm(createEmptyPrinterForm());
+        setPrinterError(null);
+        setPrinterSuccess(null);
+    };
+
+    const handleSubmitPrinterForm = async () => {
+        const validationError = validatePrinterForm(printerForm);
+
+        if (validationError) {
+            setPrinterError(validationError);
+            return;
+        }
+
+        setIsSavingPrinterForm(true);
         setPrinterError(null);
         setPrinterSuccess(null);
 
-        if (printerForm.connectionType === 'network' && !printerForm.host.trim()) {
-            setPrinterError('Host e obrigatorio para impressora de rede.');
-            return;
-        }
-
-        if (printerForm.connectionType === 'shared_windows' && !printerForm.sharePath.trim()) {
-            setPrinterError('share_path e obrigatorio para impressora compartilhada no Windows.');
-            return;
-        }
-
-        const normalizedPort = Number(printerForm.port || '9100');
-
-        if (printerForm.connectionType === 'network' && (!Number.isFinite(normalizedPort) || normalizedPort <= 0)) {
-            setPrinterError('Informe uma porta valida para impressora de rede.');
-            return;
-        }
-
-        setIsSavingPrinterSettings(true);
-
         try {
-            const saved = await savePrinterSettings(
-                {
-                    enabled: printerForm.enabled,
-                    connection_type: printerForm.connectionType,
-                    host: printerForm.connectionType === 'network' ? printerForm.host.trim() : undefined,
-                    port: printerForm.connectionType === 'network' ? normalizedPort : undefined,
-                    share_path: printerForm.connectionType === 'shared_windows' ? printerForm.sharePath.trim() : undefined,
-                    profile: printerForm.profile.trim() || 'simple',
-                    header: printerForm.header.trim() || 'SENHA DE ATENDIMENTO',
-                },
-                accessToken,
-            );
+            if (editingPrinterId !== null) {
+                const saved = await updatePrinterSettings(editingPrinterId, buildPrinterPayload(printerForm), accessToken);
 
-            setPrinterForm({
-                enabled: saved.enabled ?? printerForm.enabled,
-                connectionType: saved.connection_type ?? printerForm.connectionType,
-                host: saved.host ?? '',
-                port: String(saved.port ?? 9100),
-                sharePath: saved.share_path ?? '',
-                profile: saved.profile ?? 'simple',
-                header: saved.header ?? 'SENHA DE ATENDIMENTO',
-            });
+                setPrinterForms((prev) => prev.map((printer) => (printer.id === editingPrinterId ? { id: saved.id, form: mapPrinterSettingsToForm(saved) } : printer)));
+                setPrinterForm(mapPrinterSettingsToForm(saved));
+                setPrinterSuccess('Configuracao da impressora salva com sucesso.');
+                return;
+            }
 
-            setPrinterSuccess('Configuracao da impressora salva com sucesso.');
+            const created = await createPrinterSettings(buildPrinterPayload(printerForm), accessToken);
+
+            setPrinterForms((prev) => [...prev, { id: created.id, form: mapPrinterSettingsToForm(created) }]);
+            setPrinterForm(createEmptyPrinterForm());
+            setPrinterSuccess('Impressora cadastrada com sucesso.');
         } catch (error) {
             setPrinterError(error instanceof Error ? error.message : 'Falha ao salvar configuracao da impressora.');
         } finally {
-            setIsSavingPrinterSettings(false);
+            setIsSavingPrinterForm(false);
         }
     };
 
@@ -522,19 +573,20 @@ const Admin: React.FC = () => {
 
                         {isSuperAdmin ? (
                             <PrinterSettingsCard
+                                printers={printerForms.map((printer) => ({
+                                    id: printer.id,
+                                    name: printer.form.name,
+                                }))}
                                 form={printerForm}
+                                editingPrinterId={editingPrinterId}
                                 isLoading={isLoadingPrinterSettings}
-                                isSaving={isSavingPrinterSettings}
-                                successMessage={printerSuccess}
+                                isSaving={isSavingPrinterForm}
                                 errorMessage={printerError}
-                                onEnabledChange={(value) => setPrinterForm((prev) => ({ ...prev, enabled: value }))}
-                                onConnectionTypeChange={(value) => setPrinterForm((prev) => ({ ...prev, connectionType: value }))}
-                                onHostChange={(value) => setPrinterForm((prev) => ({ ...prev, host: value }))}
-                                onPortChange={(value) => setPrinterForm((prev) => ({ ...prev, port: value }))}
-                                onSharePathChange={(value) => setPrinterForm((prev) => ({ ...prev, sharePath: value }))}
-                                onProfileChange={(value) => setPrinterForm((prev) => ({ ...prev, profile: value }))}
-                                onHeaderChange={(value) => setPrinterForm((prev) => ({ ...prev, header: value }))}
-                                onSubmit={handlePrinterSubmit}
+                                successMessage={printerSuccess}
+                                onPrinterFieldChange={handlePrinterFieldChange}
+                                onEditPrinter={handleEditPrinter}
+                                onCancelEdit={handleCancelPrinterEdit}
+                                onSubmit={handleSubmitPrinterForm}
                                 onReload={refreshPrinterSettings}
                             />
                         ) : null}

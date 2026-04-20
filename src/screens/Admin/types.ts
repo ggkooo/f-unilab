@@ -1,3 +1,5 @@
+import type { PrinterConnectionType } from '../../services/adminService';
+
 export interface UserFormState {
     name: string;
     login: string;
@@ -20,6 +22,17 @@ export interface ConfirmDialogConfig {
     onConfirm: () => Promise<void>;
 }
 
+export interface PrinterFormState {
+    name: string;
+    enabled: boolean;
+    connectionType: PrinterConnectionType;
+    host: string;
+    port: string;
+    sharePath: string;
+    profile: string;
+    header: string;
+}
+
 export const emptyUserForm: UserFormState = {
     name: '',
     login: '',
@@ -34,3 +47,14 @@ export const emptyRegisterUserForm: RegisterUserFormState = {
     password: '',
     passwordConfirmation: '',
 };
+
+export const createEmptyPrinterForm = (): PrinterFormState => ({
+    name: '',
+    enabled: true,
+    connectionType: 'network',
+    host: '',
+    port: '9100',
+    sharePath: '',
+    profile: 'simple',
+    header: 'SENHA DE ATENDIMENTO',
+});

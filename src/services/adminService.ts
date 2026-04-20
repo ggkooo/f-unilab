@@ -74,6 +74,7 @@ export interface RegisterUserPayload {
 export type PrinterConnectionType = 'network' | 'shared_windows';
 
 export interface PrinterSettingsPayload {
+    name: string;
     enabled: boolean;
     connection_type: PrinterConnectionType;
     host?: string;
@@ -84,6 +85,9 @@ export interface PrinterSettingsPayload {
 }
 
 export interface PrinterSettingsResponse {
+    id: number;
+    location: string;
+    name: string;
     enabled: boolean;
     connection_type: PrinterConnectionType;
     host?: string;
@@ -91,6 +95,29 @@ export interface PrinterSettingsResponse {
     share_path?: string;
     profile?: string;
     header?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PrinterSettingsListResponse {
+    location: string;
+    data: PrinterSettingsResponse[];
+}
+
+export interface UpdatePrinterSettingsPayload {
+    name?: string;
+    enabled?: boolean;
+    connection_type?: PrinterConnectionType;
+    host?: string;
+    port?: number;
+    share_path?: string;
+    profile?: string;
+    header?: string;
+}
+
+interface PrinterSettingsMutationResponse {
+    message: string;
+    data: PrinterSettingsResponse;
 }
 
 const API_KEY = import.meta.env.VITE_API_KEY ?? apiConfig.apiKey;
@@ -318,10 +345,10 @@ export const fetchPrinterSettings = async (accessToken?: string) => {
         'Nao foi possivel carregar as configuracoes da impressora.',
     );
 
-    return (await response.json()) as PrinterSettingsResponse;
+    return (await response.json()) as PrinterSettingsListResponse;
 };
 
-export const savePrinterSettings = async (payload: PrinterSettingsPayload, accessToken?: string) => {
+export const createPrinterSettings = async (payload: PrinterSettingsPayload, accessToken?: string) => {
     const response = await request(
         buildApiUrl(PRINTER_SETTINGS_PATH),
         {
@@ -332,5 +359,21 @@ export const savePrinterSettings = async (payload: PrinterSettingsPayload, acces
         'Nao foi possivel salvar as configuracoes da impressora.',
     );
 
-    return (await response.json()) as PrinterSettingsResponse;
+    const data = (await response.json()) as PrinterSettingsMutationResponse;
+    return data.data;
+};
+
+export const updatePrinterSettings = async (printerSettingId: number, payload: UpdatePrinterSettingsPayload, accessToken?: string) => {
+    const response = await request(
+        buildApiUrl(`${PRINTER_SETTINGS_PATH}/${printerSettingId}`),
+        {
+            method: 'PATCH',
+            headers: buildJsonHeaders(accessToken),
+            body: JSON.stringify(payload),
+        },
+        'Nao foi possivel atualizar a configuracao da impressora.',
+    );
+
+    const data = (await response.json()) as PrinterSettingsMutationResponse;
+    return data.data;
 };

@@ -169,6 +169,11 @@ const UsersSection: React.FC<UsersSectionProps> = ({
                                         <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${user.is_admin ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
                                             {user.is_admin ? 'Admin' : 'Operador'}
                                         </span>
+                                        {user.is_super_admin ? (
+                                            <span className="rounded-full bg-purple-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-purple-700">
+                                                Superadmin
+                                            </span>
+                                        ) : null}
                                     </div>
                                 </div>
 
@@ -183,18 +188,18 @@ const UsersSection: React.FC<UsersSectionProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => void onToggleAdmin(user)}
-                                        disabled={togglingAdminId === user.id}
+                                        disabled={togglingAdminId === user.id || Boolean(user.is_super_admin)}
                                         className="rounded-lg border border-amber-200 px-3 py-2 text-xs font-bold text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        {togglingAdminId === user.id ? 'Salvando...' : user.is_admin ? 'Remover admin' : 'Tornar admin'}
+                                        {togglingAdminId === user.id ? 'Salvando...' : user.is_super_admin ? 'Superadmin' : user.is_admin ? 'Remover admin' : 'Tornar admin'}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => onDeleteUser(user.id)}
-                                        disabled={deletingUserId === user.id}
+                                        disabled={deletingUserId === user.id || Boolean(user.is_super_admin)}
                                         className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        {deletingUserId === user.id ? 'Removendo...' : 'Remover'}
+                                        {deletingUserId === user.id ? 'Removendo...' : user.is_super_admin ? 'Protegido' : 'Remover'}
                                     </button>
                                 </div>
                             </div>

@@ -5,8 +5,10 @@ export interface ApiUser {
     uuid: string;
     name: string;
     login: string;
+    location?: string;
     active: boolean;
     is_admin: boolean;
+    is_super_admin?: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -69,6 +71,55 @@ export interface RegisterUserPayload {
     password_confirmation: string;
 }
 
+export type PrinterConnectionType = 'network' | 'shared_windows';
+
+export interface PrinterSettingsPayload {
+    name: string;
+    enabled: boolean;
+    connection_type: PrinterConnectionType;
+    host?: string;
+    port?: number;
+    share_path?: string;
+    profile?: string;
+    header?: string;
+}
+
+export interface PrinterSettingsResponse {
+    id: number;
+    location: string;
+    name: string;
+    enabled: boolean;
+    connection_type: PrinterConnectionType;
+    host?: string;
+    port?: number;
+    share_path?: string;
+    profile?: string;
+    header?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PrinterSettingsListResponse {
+    location: string;
+    data: PrinterSettingsResponse[];
+}
+
+export interface UpdatePrinterSettingsPayload {
+    name?: string;
+    enabled?: boolean;
+    connection_type?: PrinterConnectionType;
+    host?: string;
+    port?: number;
+    share_path?: string;
+    profile?: string;
+    header?: string;
+}
+
+interface PrinterSettingsMutationResponse {
+    message: string;
+    data: PrinterSettingsResponse;
+}
+
 const API_KEY = import.meta.env.VITE_API_KEY ?? apiConfig.apiKey;
 const USERS_PATH = import.meta.env.VITE_USERS_PATH ?? '/users';
 const REGISTER_PATH = import.meta.env.VITE_REGISTER_PATH ?? '/register';
@@ -76,6 +127,7 @@ const MAKE_ADMIN_SUFFIX = '/make-admin';
 const REMOVE_ADMIN_SUFFIX = '/remove-admin';
 const VIDEOS_PATH = import.meta.env.VITE_VIDEOS_PATH ?? '/videos';
 const ATTENDANCE_REPORT_PATH = import.meta.env.VITE_REPORT_PDF_PATH ?? '/reports/attendances';
+const PRINTER_SETTINGS_PATH = import.meta.env.VITE_PRINTER_SETTINGS_PATH ?? '/printer-settings';
 
 type ApiErrorBody = {
     message?: string;
@@ -104,6 +156,20 @@ const buildJsonHeaders = (accessToken?: string): HeadersInit => ({
 });
 
 const getErrorMessage = async (response: Response, fallbackMessage: string) => {
+    const mapPermissionError = (message: string) => {
+        const normalizedMessage = message.trim().toLowerCase();
+
+        if (normalizedMessage.includes('super administrator access required')) {
+            return 'Acesso negado: esta ação é exclusiva de superadministrador.';
+        }
+
+        if (normalizedMessage.includes('administrator access required')) {
+            return 'Acesso negado: esta ação exige perfil administrador.';
+        }
+
+        return message;
+    };
+
     try {
         const body = (await response.json()) as ApiErrorBody;
 
@@ -118,14 +184,18 @@ const getErrorMessage = async (response: Response, fallbackMessage: string) => {
         }
 
         if (body.message) {
-            return body.message;
+            return mapPermissionError(body.message);
         }
 
         if (body.error) {
-            return body.error;
+            return mapPermissionError(body.error);
         }
     } catch {
         // Ignore parse errors and fallback to default error.
+    }
+
+    if (response.status === 403) {
+        return 'Você não tem permissão para executar esta ação.';
     }
 
     return fallbackMessage;
@@ -263,4 +333,47 @@ export const fetchAttendanceReport = async (startDate: string, endDate: string, 
     );
 
     return (await response.json()) as AttendanceReportResponse;
+};
+
+export const fetchPrinterSettings = async (accessToken?: string) => {
+    const response = await request(
+        buildApiUrl(PRINTER_SETTINGS_PATH),
+        {
+            method: 'GET',
+            headers: buildAuthHeaders(accessToken),
+        },
+        'Nao foi possivel carregar as configuracoes da impressora.',
+    );
+
+    return (await response.json()) as PrinterSettingsListResponse;
+};
+
+export const createPrinterSettings = async (payload: PrinterSettingsPayload, accessToken?: string) => {
+    const response = await request(
+        buildApiUrl(PRINTER_SETTINGS_PATH),
+        {
+            method: 'POST',
+            headers: buildJsonHeaders(accessToken),
+            body: JSON.stringify(payload),
+        },
+        'Nao foi possivel salvar as configuracoes da impressora.',
+    );
+
+    const data = (await response.json()) as PrinterSettingsMutationResponse;
+    return data.data;
+};
+
+export const updatePrinterSettings = async (printerSettingId: number, payload: UpdatePrinterSettingsPayload, accessToken?: string) => {
+    const response = await request(
+        buildApiUrl(`${PRINTER_SETTINGS_PATH}/${printerSettingId}`),
+        {
+            method: 'PATCH',
+            headers: buildJsonHeaders(accessToken),
+            body: JSON.stringify(payload),
+        },
+        'Nao foi possivel atualizar a configuracao da impressora.',
+    );
+
+    const data = (await response.json()) as PrinterSettingsMutationResponse;
+    return data.data;
 };

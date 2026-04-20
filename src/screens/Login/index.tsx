@@ -2,14 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { getAuthSession, setAuthSession } from '../../auth/session';
+import {
+    DEFAULT_UNILAB_LOCATION,
+    buildLocationAdminPath,
+    buildLocationAttendantPath,
+} from '../../locations';
+import { useRouteLocation } from '../../locations/useRouteLocation';
 import { loginWithCredentials } from '../../services/authService';
 import LoginCard from './components/LoginCard';
 import LoginForm from './components/LoginForm';
 
-const getPostLoginPath = (isAdmin: boolean) => (isAdmin ? '/admin' : '/attendent');
+const getPostLoginPath = (location: NonNullable<ReturnType<typeof useRouteLocation>>, isAdmin: boolean) => (
+    isAdmin ? buildLocationAdminPath(location) : buildLocationAttendantPath(location)
+);
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
+    const routeLocation = useRouteLocation();
+    const activeLocation = routeLocation ?? DEFAULT_UNILAB_LOCATION;
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +29,13 @@ const Login: React.FC = () => {
         const authSession = getAuthSession();
 
         if (authSession?.data?.access_token) {
-            navigate(getPostLoginPath(authSession.data.user.is_admin), { replace: true });
+            navigate(
+                getPostLoginPath(
+                    authSession.data.user.location,
+                    authSession.data.user.is_admin || authSession.data.user.is_super_admin,
+                ),
+                { replace: true },
+            );
         }
     }, [navigate]);
 
@@ -35,9 +51,14 @@ const Login: React.FC = () => {
         setError(null);
 
         try {
-            const sessionData = await loginWithCredentials({ login, password });
+            const sessionData = await loginWithCredentials({ login, password, location: activeLocation });
             setAuthSession(sessionData);
-            navigate(getPostLoginPath(sessionData.data.user.is_admin));
+            navigate(
+                getPostLoginPath(
+                    sessionData.data.user.location,
+                    sessionData.data.user.is_admin || sessionData.data.user.is_super_admin,
+                ),
+            );
         } catch (requestError) {
             setError(requestError instanceof Error ? requestError.message : 'Erro ao realizar login.');
         } finally {

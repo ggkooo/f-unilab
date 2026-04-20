@@ -1,11 +1,21 @@
 import { apiConfig, buildApiUrl } from './apiConfig';
+import type { UnilabLocation } from '../locations';
 
 type CreateTicketInput = {
     serviceType: string;
+    location: UnilabLocation;
 };
 
 type ApiErrorBody = {
     message?: string;
+};
+
+type CreateTicketResponse = {
+    status?: string;
+    message?: string;
+    print?: {
+        status?: string;
+    };
 };
 
 const createTimeoutController = (timeoutMs: number) => {
@@ -32,7 +42,7 @@ const getErrorMessage = async (response: Response) => {
     return 'Não foi possível abrir o atendimento. Tente novamente.';
 };
 
-export const createTicket = async ({ serviceType }: CreateTicketInput) => {
+export const createTicket = async ({ serviceType, location }: CreateTicketInput) => {
     const timeout = createTimeoutController(apiConfig.timeoutMs);
 
     try {
@@ -44,6 +54,7 @@ export const createTicket = async ({ serviceType }: CreateTicketInput) => {
             },
             body: JSON.stringify({
                 service_type: serviceType,
+                location,
             }),
             signal: timeout.signal,
         });
@@ -51,6 +62,13 @@ export const createTicket = async ({ serviceType }: CreateTicketInput) => {
         if (!response.ok) {
             throw new Error(await getErrorMessage(response));
         }
+
+        const body = (await response.json().catch(() => null)) as CreateTicketResponse | null;
+
+        return {
+            status: body?.status ?? 'success',
+            printStatus: body?.print?.status ?? null,
+        };
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw new Error('A requisição demorou demais. Tente novamente.');

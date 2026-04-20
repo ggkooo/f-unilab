@@ -1,4 +1,5 @@
 import { type AuthSessionData } from '../auth/session';
+import type { UnilabLocation } from '../locations';
 import { apiConfig, buildApiUrl } from './apiConfig';
 
 const LOGIN_PATH = '/login';
@@ -8,6 +9,7 @@ const TIMEOUT_ERROR_MESSAGE = 'A requisição demorou demais. Tente novamente.';
 type LoginInput = {
     login: string;
     password: string;
+    location: UnilabLocation;
 };
 
 type LoginApiResponse = {
@@ -31,14 +33,14 @@ const getAuthHeaders = () => ({
     ...(apiConfig.apiKey ? { 'X-API-KEY': apiConfig.apiKey } : {}),
 });
 
-export const loginWithCredentials = async ({ login, password }: LoginInput): Promise<AuthSessionData> => {
+export const loginWithCredentials = async ({ login, password, location }: LoginInput): Promise<AuthSessionData> => {
     const timeout = createTimeoutController(apiConfig.timeoutMs);
 
     try {
         const response = await fetch(buildApiUrl(LOGIN_PATH), {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ login, password }),
+            body: JSON.stringify({ login, password, location }),
             signal: timeout.signal,
         });
 

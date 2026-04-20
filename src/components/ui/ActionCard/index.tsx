@@ -45,12 +45,12 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant,
     return (
         <button
             onClick={onClick}
-            className={`group relative flex h-full min-h-[12.5rem] w-full flex-col rounded-3xl border p-3.5 text-left transition-all duration-300 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 sm:min-h-[13.5rem] sm:p-4 xl:min-h-[16rem] xl:p-5 ${styles.bg} ${styles.card} ${styles.ring}`}
+            className={`group relative flex h-full min-h-[10rem] w-full flex-col rounded-3xl border p-3 text-left transition-all duration-300 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 sm:min-h-[11rem] sm:p-3.5 md:min-h-[11.5rem] lg:min-h-[12rem] lg:p-4 xl:min-h-[14rem] xl:p-5 2xl:min-h-[16rem] ${styles.bg} ${styles.card} ${styles.ring}`}
         >
             <div className="flex flex-1 flex-col">
-                <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4 sm:gap-4">
+                <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3 sm:gap-3 lg:mb-3 lg:gap-4">
                     <div className="flex items-center gap-3">
-                        <span className={`material-icons-outlined flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-3xl sm:h-14 sm:w-14 sm:text-3xl xl:h-16 xl:w-16 xl:text-4xl ${styles.icon}`}>
+                        <span className={`material-icons-outlined flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-2xl sm:h-12 sm:w-12 sm:text-3xl lg:h-11 lg:w-11 xl:h-14 xl:w-14 xl:text-3xl 2xl:h-16 2xl:w-16 2xl:text-4xl ${styles.icon}`}>
                             {icon}
                         </span>
 
@@ -80,12 +80,12 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant,
                         arrow_forward
                     </span>
                 </div>
-                <span className="text-[1.45rem] font-semibold leading-tight text-slate-900 sm:text-[1.55rem] xl:text-[1.7rem]">{title}</span>
+                <span className="text-[1.2rem] font-semibold leading-tight text-slate-900 sm:text-[1.35rem] lg:text-[1.3rem] xl:text-[1.55rem] 2xl:text-[1.7rem]">{title}</span>
                 {subtitle && (
-                    <span className="text-[0.92rem] font-medium leading-relaxed text-slate-500 sm:text-[0.95rem] xl:text-base">{subtitle}</span>
+                    <span className="text-[0.8rem] font-medium leading-relaxed text-slate-500 sm:text-[0.875rem] lg:text-[0.84rem] xl:text-[0.92rem] 2xl:text-base">{subtitle}</span>
                 )}
             </div>
-            <span className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-400 sm:text-sm xl:mt-4">Toque para continuar</span>
+            <span className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-400 sm:text-xs lg:mt-2 xl:mt-3 2xl:mt-4">Toque para continuar</span>
         </button>
     );
 };

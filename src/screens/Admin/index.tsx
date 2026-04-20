@@ -2,36 +2,99 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { clearAuthSession, getAccessToken, getAuthSession } from '../../auth/session';
+import { buildLocationLoginPath } from '../../locations';
 import {
+    createPrinterSettings,
     deleteAdminUser,
     fetchAdminUsers,
     fetchAdminVideos,
     fetchAttendanceReport,
+    fetchPrinterSettings,
     registerAdminUser,
     toggleUserAdminRole,
     type ApiUser,
+    type PrinterSettingsResponse,
+    updatePrinterSettings,
     updateAdminUser,
 } from '../../services/adminService';
 import AdminHero from './components/AdminHero';
 import ConfirmActionDialog from './components/ConfirmActionDialog';
 import ReportSection from './components/ReportSection';
 import SummaryCards from './components/SummaryCards';
+import PrinterSettingsCard from './components/PrinterSettingsCard';
 import UsersSection from './components/UsersSection';
 import { createAttendanceReportPdf } from './reportPdf';
 import {
+    createEmptyPrinterForm,
     emptyRegisterUserForm,
     emptyUserForm,
     type ConfirmDialogConfig,
+    type PrinterFormState,
     type RegisterUserFormState,
     type UserFormState,
 } from './types';
 import { formatLoginLabel } from './utils';
+
+type ManagedPrinterForm = {
+    id: number;
+    form: PrinterFormState;
+};
+
+const mapPrinterSettingsToForm = (settings: PrinterSettingsResponse): PrinterFormState => ({
+    name: settings.name ?? '',
+    enabled: settings.enabled ?? true,
+    connectionType: settings.connection_type ?? 'network',
+    host: settings.host ?? '',
+    port: String(settings.port ?? 9100),
+    sharePath: settings.share_path ?? '',
+    profile: settings.profile ?? 'simple',
+    header: settings.header ?? 'SENHA DE ATENDIMENTO',
+});
+
+const validatePrinterForm = (form: PrinterFormState) => {
+    if (!form.name.trim()) {
+        return 'Informe um nome para a impressora.';
+    }
+
+    if (form.connectionType === 'network' && !form.host.trim()) {
+        return 'Host e obrigatorio para impressora de rede.';
+    }
+
+    if (form.connectionType === 'shared_windows' && !form.sharePath.trim()) {
+        return 'share_path e obrigatorio para impressora compartilhada no Windows.';
+    }
+
+    const normalizedPort = Number(form.port || '9100');
+
+    if (form.connectionType === 'network' && (!Number.isFinite(normalizedPort) || normalizedPort <= 0)) {
+        return 'Informe uma porta valida para impressora de rede.';
+    }
+
+    return null;
+};
+
+const buildPrinterPayload = (form: PrinterFormState) => {
+    const normalizedPort = Number(form.port || '9100');
+
+    return {
+        name: form.name.trim(),
+        enabled: form.enabled,
+        connection_type: form.connectionType,
+        host: form.connectionType === 'network' ? form.host.trim() : undefined,
+        port: form.connectionType === 'network' ? normalizedPort : undefined,
+        share_path: form.connectionType === 'shared_windows' ? form.sharePath.trim() : undefined,
+        profile: form.profile.trim() || 'simple',
+        header: form.header.trim() || 'SENHA DE ATENDIMENTO',
+    };
+};
 
 const Admin: React.FC = () => {
     const navigate = useNavigate();
     const authSession = getAuthSession();
     const currentUser = authSession?.data.user;
     const accessToken = getAccessToken() ?? undefined;
+    const isSuperAdmin = currentUser?.is_super_admin ?? false;
+    const hasAdminPanelAccess = Boolean(currentUser?.is_admin || currentUser?.is_super_admin);
 
     const [users, setUsers] = useState<ApiUser[]>([]);
     const [videos, setVideos] = useState<{ filename: string; url: string; created_at?: string }[]>([]);
@@ -40,16 +103,23 @@ const Admin: React.FC = () => {
     const [registerUserForm, setRegisterUserForm] = useState<RegisterUserFormState>(emptyRegisterUserForm);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [printerForms, setPrinterForms] = useState<ManagedPrinterForm[]>([]);
+    const [printerForm, setPrinterForm] = useState<PrinterFormState>(createEmptyPrinterForm());
+    const [editingPrinterId, setEditingPrinterId] = useState<number | null>(null);
 
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [isSavingUser, setIsSavingUser] = useState(false);
     const [isCreatingUser, setIsCreatingUser] = useState(false);
     const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+    const [isLoadingPrinterSettings, setIsLoadingPrinterSettings] = useState(false);
+    const [isSavingPrinterForm, setIsSavingPrinterForm] = useState(false);
     const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
     const [togglingAdminId, setTogglingAdminId] = useState<number | null>(null);
 
     const [usersError, setUsersError] = useState<string | null>(null);
     const [reportError, setReportError] = useState<string | null>(null);
+    const [printerError, setPrinterError] = useState<string | null>(null);
+    const [printerSuccess, setPrinterSuccess] = useState<string | null>(null);
     const [userSuccess, setUserSuccess] = useState<string | null>(null);
     const [reportSuccess, setReportSuccess] = useState<string | null>(null);
     const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogConfig | null>(null);
@@ -73,6 +143,10 @@ const Admin: React.FC = () => {
     };
 
     const fetchUsers = async () => {
+        if (!isSuperAdmin) {
+            return;
+        }
+
         setIsLoadingUsers(true);
         setUsersError(null);
 
@@ -110,6 +184,10 @@ const Admin: React.FC = () => {
     };
 
     const fetchVideos = async () => {
+        if (!isSuperAdmin) {
+            return;
+        }
+
         try {
             setVideos(await fetchAdminVideos(accessToken));
         } catch {
@@ -117,10 +195,110 @@ const Admin: React.FC = () => {
         }
     };
 
+    const refreshPrinterSettings = async () => {
+        if (!isSuperAdmin) {
+            return;
+        }
+
+        setIsLoadingPrinterSettings(true);
+        setPrinterError(null);
+
+        try {
+            const settings = await fetchPrinterSettings(accessToken);
+
+            setPrinterForms(settings.data.map((item) => ({ id: item.id, form: mapPrinterSettingsToForm(item) })));
+        } catch (error) {
+            setPrinterError(error instanceof Error ? error.message : 'Falha ao carregar configuracao da impressora.');
+        } finally {
+            setIsLoadingPrinterSettings(false);
+        }
+    };
+
     useEffect(() => {
-        void fetchUsers();
-        void fetchVideos();
-    }, []);
+        if (!hasAdminPanelAccess) {
+            return;
+        }
+
+        if (isSuperAdmin) {
+            void fetchUsers();
+            void fetchVideos();
+            void refreshPrinterSettings();
+            return;
+        }
+
+        setUsers([]);
+        setVideos([]);
+        setSelectedUserId(null);
+        syncUserForm(null);
+        setRegisterUserForm(emptyRegisterUserForm);
+        setPrinterForms([]);
+        setPrinterForm(createEmptyPrinterForm());
+        setEditingPrinterId(null);
+        setIsLoadingUsers(false);
+    }, [hasAdminPanelAccess, isSuperAdmin]);
+
+    const handlePrinterFieldChange = <K extends keyof PrinterFormState>(field: K, value: PrinterFormState[K]) => {
+        setPrinterForm((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+        setPrinterError(null);
+        setPrinterSuccess(null);
+    };
+
+    const handleEditPrinter = (printerId: number) => {
+        const selectedPrinter = printerForms.find((printer) => printer.id === printerId);
+
+        if (!selectedPrinter) {
+            return;
+        }
+
+        setEditingPrinterId(printerId);
+        setPrinterForm(selectedPrinter.form);
+        setPrinterError(null);
+        setPrinterSuccess(null);
+    };
+
+    const handleCancelPrinterEdit = () => {
+        setEditingPrinterId(null);
+        setPrinterForm(createEmptyPrinterForm());
+        setPrinterError(null);
+        setPrinterSuccess(null);
+    };
+
+    const handleSubmitPrinterForm = async () => {
+        const validationError = validatePrinterForm(printerForm);
+
+        if (validationError) {
+            setPrinterError(validationError);
+            return;
+        }
+
+        setIsSavingPrinterForm(true);
+        setPrinterError(null);
+        setPrinterSuccess(null);
+
+        try {
+            if (editingPrinterId !== null) {
+                const saved = await updatePrinterSettings(editingPrinterId, buildPrinterPayload(printerForm), accessToken);
+
+                setPrinterForms((prev) => prev.map((printer) => (printer.id === editingPrinterId ? { id: saved.id, form: mapPrinterSettingsToForm(saved) } : printer)));
+                setPrinterForm(mapPrinterSettingsToForm(saved));
+                setPrinterSuccess('Configuracao da impressora salva com sucesso.');
+                return;
+            }
+
+            const created = await createPrinterSettings(buildPrinterPayload(printerForm), accessToken);
+
+            setPrinterForms((prev) => [...prev, { id: created.id, form: mapPrinterSettingsToForm(created) }]);
+            setPrinterForm(createEmptyPrinterForm());
+            setPrinterSuccess('Impressora cadastrada com sucesso.');
+        } catch (error) {
+            setPrinterError(error instanceof Error ? error.message : 'Falha ao salvar configuracao da impressora.');
+        } finally {
+            setIsSavingPrinterForm(false);
+        }
+    };
 
     const handleSelectUser = (user: ApiUser) => {
         setSelectedUserId(user.id);
@@ -323,8 +501,9 @@ const Admin: React.FC = () => {
     };
 
     const handleLogout = () => {
+        const nextLoginPath = buildLocationLoginPath(currentUser?.location ?? 'campus');
         clearAuthSession();
-        navigate('/login', { replace: true });
+        navigate(nextLoginPath, { replace: true });
     };
 
     return (
@@ -333,41 +512,52 @@ const Admin: React.FC = () => {
                 <AdminHero
                     administratorName={currentUser?.name ?? '-'}
                     loginLabel={formatLoginLabel(currentUser?.login ?? '-')}
+                    canManage={isSuperAdmin}
                     onLogout={handleLogout}
                 />
 
-                <div className="grid gap-8 xl:grid-cols-[1.25fr_0.95fr]">
-                    <div className="flex flex-col gap-8">
-                        <UsersSection
-                            users={users}
-                            selectedUserId={selectedUserId}
-                            selectedUser={selectedUser}
-                            userForm={userForm}
-                            registerUserForm={registerUserForm}
-                            usersError={usersError}
-                            userSuccess={userSuccess}
-                            isLoadingUsers={isLoadingUsers}
-                            isSavingUser={isSavingUser}
-                            isCreatingUser={isCreatingUser}
-                            deletingUserId={deletingUserId}
-                            togglingAdminId={togglingAdminId}
-                            onRefreshUsers={fetchUsers}
-                            onSelectUser={handleSelectUser}
-                            onToggleAdmin={handleToggleAdmin}
-                            onDeleteUser={handleDeleteUser}
-                            onSaveUser={handleSaveUser}
-                            onRegisterUser={handleRegisterUser}
-                            onRegisterNameChange={(value) => handleRegisterFieldChange('name', value)}
-                            onRegisterLoginChange={(value) => handleRegisterFieldChange('login', value)}
-                            onRegisterPasswordChange={(value) => handleRegisterFieldChange('password', value)}
-                            onRegisterPasswordConfirmationChange={(value) => handleRegisterFieldChange('passwordConfirmation', value)}
-                            onNameChange={(value) => handleUserFieldChange('name', value)}
-                            onLoginChange={(value) => handleUserFieldChange('login', value)}
-                            onPasswordChange={(value) => handleUserFieldChange('password', value)}
-                            onActiveChange={(value) => handleUserFieldChange('active', value)}
-                            onIsAdminChange={(value) => handleUserFieldChange('is_admin', value)}
-                        />
-                    </div>
+                <div className={`grid gap-8 ${isSuperAdmin ? 'xl:grid-cols-[1.25fr_0.95fr]' : 'xl:grid-cols-1'}`}>
+                    {isSuperAdmin ? (
+                        <div className="flex flex-col gap-8">
+                            <UsersSection
+                                users={users}
+                                selectedUserId={selectedUserId}
+                                selectedUser={selectedUser}
+                                userForm={userForm}
+                                registerUserForm={registerUserForm}
+                                usersError={usersError}
+                                userSuccess={userSuccess}
+                                isLoadingUsers={isLoadingUsers}
+                                isSavingUser={isSavingUser}
+                                isCreatingUser={isCreatingUser}
+                                deletingUserId={deletingUserId}
+                                togglingAdminId={togglingAdminId}
+                                onRefreshUsers={fetchUsers}
+                                onSelectUser={handleSelectUser}
+                                onToggleAdmin={handleToggleAdmin}
+                                onDeleteUser={handleDeleteUser}
+                                onSaveUser={handleSaveUser}
+                                onRegisterUser={handleRegisterUser}
+                                onRegisterNameChange={(value) => handleRegisterFieldChange('name', value)}
+                                onRegisterLoginChange={(value) => handleRegisterFieldChange('login', value)}
+                                onRegisterPasswordChange={(value) => handleRegisterFieldChange('password', value)}
+                                onRegisterPasswordConfirmationChange={(value) => handleRegisterFieldChange('passwordConfirmation', value)}
+                                onNameChange={(value) => handleUserFieldChange('name', value)}
+                                onLoginChange={(value) => handleUserFieldChange('login', value)}
+                                onPasswordChange={(value) => handleUserFieldChange('password', value)}
+                                onActiveChange={(value) => handleUserFieldChange('active', value)}
+                                onIsAdminChange={(value) => handleUserFieldChange('is_admin', value)}
+                            />
+                        </div>
+                    ) : (
+                        <div className="rounded-[2rem] border border-blue-100 bg-blue-50 p-6 text-slate-700 shadow-sm lg:p-8">
+                            <h2 className="text-xl font-bold text-slate-900">Acesso de consulta</h2>
+                            <p className="mt-2 text-sm leading-relaxed text-slate-600 lg:text-base">
+                                Seu perfil de administrador permite apenas consulta e exportacao de relatorios.
+                                Funcoes de gestao de usuarios e configuracoes ficam disponiveis apenas para superadministrador.
+                            </p>
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-8">
                         <ReportSection
@@ -381,11 +571,33 @@ const Admin: React.FC = () => {
                             onDownloadReport={handleDownloadReport}
                         />
 
-                        <SummaryCards
-                            usersCount={users.length}
-                            adminsCount={users.filter((item) => item.is_admin).length}
-                            videosCount={videos.length}
-                        />
+                        {isSuperAdmin ? (
+                            <PrinterSettingsCard
+                                printers={printerForms.map((printer) => ({
+                                    id: printer.id,
+                                    name: printer.form.name,
+                                }))}
+                                form={printerForm}
+                                editingPrinterId={editingPrinterId}
+                                isLoading={isLoadingPrinterSettings}
+                                isSaving={isSavingPrinterForm}
+                                errorMessage={printerError}
+                                successMessage={printerSuccess}
+                                onPrinterFieldChange={handlePrinterFieldChange}
+                                onEditPrinter={handleEditPrinter}
+                                onCancelEdit={handleCancelPrinterEdit}
+                                onSubmit={handleSubmitPrinterForm}
+                                onReload={refreshPrinterSettings}
+                            />
+                        ) : null}
+
+                        {isSuperAdmin ? (
+                            <SummaryCards
+                                usersCount={users.length}
+                                adminsCount={users.filter((item) => item.is_admin).length}
+                                videosCount={videos.length}
+                            />
+                        ) : null}
                     </div>
                 </div>
             </section>

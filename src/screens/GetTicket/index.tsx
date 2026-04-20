@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '../../components/layout/Layout';
+import { DEFAULT_UNILAB_LOCATION } from '../../locations';
+import { useRouteLocation } from '../../locations/useRouteLocation';
 import { createTicket } from '../../services/ticketService.ts';
 import { SERVICE_OPTIONS } from './constants';
 import GetTicketFeedback from './components/GetTicketFeedback';
@@ -8,6 +10,8 @@ import ServiceOptionsGrid from './components/ServiceOptionsGrid';
 import type { FeedbackType } from './types';
 
 const GetTicket: React.FC = () => {
+    const routeLocation = useRouteLocation();
+    const activeLocation = routeLocation ?? DEFAULT_UNILAB_LOCATION;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [feedback, setFeedback] = useState<string | null>(null);
@@ -37,9 +41,14 @@ const GetTicket: React.FC = () => {
         setFeedbackType(null);
 
         try {
-            await createTicket({ serviceType });
+            const result = await createTicket({ serviceType, location: activeLocation });
+            const isBackgroundPrint = result.printStatus?.toLowerCase() === 'enviando';
 
-            setFeedback(`Solicitação enviada: ${serviceType}.`);
+            setFeedback(
+                isBackgroundPrint
+                    ? `Solicitacao recebida: ${serviceType}. Impressao em envio.`
+                    : `Solicitacao enviada: ${serviceType}.`,
+            );
             setFeedbackType('success');
         } catch (error) {
             setFeedback(error instanceof Error ? error.message : 'Falha de comunicação com a API.');
@@ -51,7 +60,7 @@ const GetTicket: React.FC = () => {
     };
 
     return (
-        <Layout contentClassName="mx-auto flex w-full max-w-[1180px] flex-grow flex-col justify-center px-4 py-4 sm:w-[96%] sm:px-5 sm:py-5 md:px-6 md:py-6 lg:w-[94%] lg:px-0 lg:py-8" showHeader={false}>
+        <Layout contentClassName="mx-auto flex w-full max-w-[1180px] flex-grow flex-col justify-center px-4 py-3 sm:w-[96%] sm:px-5 sm:py-4 md:px-5 md:py-4 lg:w-[94%] lg:px-0 lg:py-5 xl:py-8" showHeader={false}>
             <section className="relative w-full overflow-hidden">
                 <div className="pointer-events-none absolute -left-10 -top-8 h-40 w-40 rounded-full bg-blue-100/60 blur-3xl" />
                 <div className="pointer-events-none absolute -bottom-12 right-0 h-44 w-44 rounded-full bg-emerald-100/60 blur-3xl" />

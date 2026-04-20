@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import { clearAuthSession, getAccessToken, getAuthSession } from '../../auth/session';
+import { clearAuthSession, getAccessToken, getAuthSession, getUserLocation } from '../../auth/session';
+import { buildLocationLoginPath } from '../../locations';
 import {
     cancelTicket,
     callTicket,
@@ -31,6 +32,7 @@ const Attendant: React.FC = () => {
     const [clockTick, setClockTick] = useState(0);
 
     const loggedCounter = getAuthSession()?.data?.user?.login ?? 'Guichê não identificado';
+    const userLocation = getUserLocation();
 
     const serviceTypeOptions = useMemo(
         () => [
@@ -72,7 +74,12 @@ const Attendant: React.FC = () => {
         }
 
         try {
-            const waitingTickets = await fetchWaitingTickets();
+            if (!userLocation) {
+                setQueue((prev) => (prev.length === 0 ? prev : []));
+                return;
+            }
+
+            const waitingTickets = await fetchWaitingTickets(userLocation);
 
             setQueue((prev) => {
                 const previousSignature = getQueueSignature(prev);
@@ -243,15 +250,20 @@ const Attendant: React.FC = () => {
     };
 
     const handleLogout = () => {
+        const nextLoginPath = buildLocationLoginPath(userLocation ?? 'campus');
         clearAuthSession();
-        navigate('/login', { replace: true });
+        navigate(nextLoginPath, { replace: true });
     };
 
     return (
         <Layout contentClassName="mx-auto flex w-[97%] flex-grow flex-col items-center justify-center py-8 sm:w-[95%] md:py-10 lg:w-[92%] xl:w-[90%]">
             <div className="w-full max-w-[112rem] grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-7 flex flex-col gap-8">
-                    <AttendantTopBar loggedCounter={loggedCounter} queueLength={queue.length} onLogout={handleLogout} />
+                    <AttendantTopBar
+                        loggedCounter={loggedCounter}
+                        queueLength={queue.length}
+                        onLogout={handleLogout}
+                    />
 
                     <CurrentAttendanceCard
                         currentTicket={currentTicket}

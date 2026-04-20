@@ -1,4 +1,6 @@
 import { apiConfig, buildApiUrl } from './apiConfig';
+import type { UnilabLocation } from '../locations';
+import { withLocationQuery } from '../locations';
 import type { ApiTicket, Ticket } from '../screens/Attendent/types';
 
 const createTimeoutController = (timeoutMs: number) => {
@@ -85,10 +87,13 @@ const request = async (path: string, init: RequestInit = {}) => {
     }
 };
 
-export const fetchWaitingTickets = async () => {
-    const response = await request(apiConfig.ticketsPath, {
+export const fetchWaitingTickets = async (location: UnilabLocation) => {
+    const response = await request(withLocationQuery(apiConfig.ticketsPath, location), {
         method: 'GET',
-        headers: getApiHeaders(),
+        headers: {
+            ...getApiHeaders(),
+            'X-UNILAB-LOCATION': location,
+        },
     });
 
     const data: unknown = await response.json();

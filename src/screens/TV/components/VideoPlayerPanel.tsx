@@ -41,7 +41,7 @@ const VideoPlayerPanel = ({ media, hasMultipleItems, error, videoRef, onVideoEnd
     };
 
     return (
-        <div className="flex-[1.15] min-h-[220px] sm:min-h-[260px] lg:min-h-[300px] flex flex-col justify-end">
+        <div className="flex-[1.15] min-h-[160px] sm:min-h-[180px] lg:min-h-[200px] xl:min-h-[260px] 2xl:min-h-[300px] flex flex-col justify-end">
             <div className="w-full bg-blue-100/40 rounded-xl lg:rounded-2xl shadow-inner p-2 sm:p-2.5 flex justify-center items-center border border-blue-200 h-full min-h-0">
                 {error ? (
                     <span className="text-red-500 text-[clamp(1rem,1.2vw,1.4rem)] text-center px-6">{error}</span>
@@ -52,7 +52,7 @@ const VideoPlayerPanel = ({ media, hasMultipleItems, error, videoRef, onVideoEnd
                             enforceSilentPlayback(el);
                         }}
                         key={media.filename}
-                        className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[200px] max-h-[44vh] 2xl:max-h-[46vh]"
+                        className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[140px] max-h-[30vh] lg:max-h-[34vh] xl:max-h-[42vh] 2xl:max-h-[46vh]"
                         style={{ transform: 'translateZ(0)', willChange: 'transform' }}
                         src={media.url}
                         autoPlay
@@ -74,7 +74,7 @@ const VideoPlayerPanel = ({ media, hasMultipleItems, error, videoRef, onVideoEnd
                         key={media.filename}
                         src={media.url}
                         alt={media.filename}
-                        className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[200px] max-h-[44vh] 2xl:max-h-[46vh]"
+                        className="rounded-lg lg:rounded-xl w-full h-full object-cover min-h-[140px] max-h-[30vh] lg:max-h-[34vh] xl:max-h-[42vh] 2xl:max-h-[46vh]"
                     />
                 ) : (
                     <span className="text-slate-400 text-[clamp(1rem,1.2vw,1.4rem)] text-center">Nenhuma mídia disponível</span>

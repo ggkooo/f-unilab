@@ -1,6 +1,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Header from '../../components/layout/Header';
+import { DEFAULT_UNILAB_LOCATION, type UnilabLocation } from '../../locations';
+import { useRouteLocation } from '../../locations/useRouteLocation';
 import { fetchRecentlyCalledTickets, fetchTvMedia } from '../../services/tvService';
 import CurrentTicketPanel from './components/CurrentTicketPanel';
 import RecentCallsPanel from './components/RecentCallsPanel';
@@ -43,6 +45,8 @@ const enforceSilentVideoPlayback = (element: HTMLVideoElement | null) => {
 };
 
 const Tv = () => {
+    const routeLocation = useRouteLocation();
+    const activeLocation = routeLocation ?? DEFAULT_UNILAB_LOCATION;
     const [tickets, setTickets] = useState<TvTicket[]>([]);
     const [isLoadingTickets, setIsLoadingTickets] = useState(true);
     const [ticketsError, setTicketsError] = useState<string | null>(null);
@@ -115,13 +119,13 @@ const Tv = () => {
         });
     };
 
-    const refreshTickets = async (showLoading = false) => {
+    const refreshTickets = async (location: UnilabLocation, showLoading = false) => {
         if (showLoading) {
             setIsLoadingTickets(true);
         }
 
         try {
-            const nextTickets = await fetchRecentlyCalledTickets();
+            const nextTickets = await fetchRecentlyCalledTickets(location);
             const nextTopTicket = nextTickets[0] ?? null;
             const nextTopTicketSignature = getTicketAlertSignature(nextTopTicket);
 
@@ -204,11 +208,11 @@ const Tv = () => {
         audio.volume = 1;
         alertAudioRef.current = audio;
 
-        void refreshTickets(true);
+        void refreshTickets(activeLocation, true);
         void refreshMedia();
 
         const ticketsInterval = window.setInterval(() => {
-            void refreshTickets();
+            void refreshTickets(activeLocation);
         }, TICKETS_REFRESH_INTERVAL_MS);
 
         const mediaInterval = window.setInterval(() => {
@@ -224,7 +228,7 @@ const Tv = () => {
                 alertAudioRef.current = null;
             }
         };
-    }, []);
+    }, [activeLocation]);
 
     useEffect(() => {
         const unlockMediaPlayback = () => {
@@ -311,10 +315,12 @@ const Tv = () => {
                 <Header />
             </div>
 
-            <main className="flex-1 min-h-0 overflow-hidden w-full grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] items-stretch justify-center p-3 sm:p-4 lg:p-6 2xl:p-8 gap-4 lg:gap-6 2xl:gap-8 z-10">
-                <CurrentTicketPanel ticket={tickets[0] ?? null} isLoading={isLoadingTickets} error={ticketsError} />
+            <main className="flex-1 min-h-0 overflow-hidden w-full grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] items-stretch justify-center p-3 sm:p-4 lg:p-4 xl:p-6 2xl:p-8 gap-3 lg:gap-4 xl:gap-6 2xl:gap-8 z-10">
+                <div className="min-h-0 min-w-0 overflow-hidden flex flex-col gap-3 lg:gap-4 xl:gap-6 2xl:gap-8">
+                    <CurrentTicketPanel ticket={tickets[0] ?? null} isLoading={isLoadingTickets} error={ticketsError} />
+                </div>
 
-                <div className="min-h-0 min-w-0 overflow-hidden flex flex-col gap-4 lg:gap-6 2xl:gap-8">
+                <div className="min-h-0 min-w-0 overflow-hidden flex flex-col gap-3 lg:gap-4 xl:gap-6 2xl:gap-8">
                     <RecentCallsPanel tickets={tickets} isLoading={isLoadingTickets} error={ticketsError} />
                     <VideoPlayerPanel
                         media={mediaItems[currentMediaIndex] ?? null}

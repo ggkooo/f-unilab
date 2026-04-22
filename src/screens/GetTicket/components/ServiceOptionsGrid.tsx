@@ -6,6 +6,8 @@ type ServiceOptionsGridProps = {
     options: ServiceOption[];
     isSubmitting: boolean;
     selectedService: string | null;
+    isBlocked: boolean;
+    blockedSubtitle?: string;
     onSelectService: (serviceType: string) => void;
 };
 
@@ -13,6 +15,8 @@ const ServiceOptionsGrid: React.FC<ServiceOptionsGridProps> = ({
     options,
     isSubmitting,
     selectedService,
+    isBlocked,
+    blockedSubtitle,
     onSelectService,
 }) => {
     return (
@@ -22,10 +26,11 @@ const ServiceOptionsGrid: React.FC<ServiceOptionsGridProps> = ({
                     <ActionCard
                         icon={service.icon}
                         title={service.title}
-                        subtitle={isSubmitting && selectedService === service.title ? 'Enviando solicitação...' : service.subtitle}
+                        subtitle={isSubmitting && selectedService === service.title ? 'Enviando solicitação...' : isBlocked ? blockedSubtitle : service.subtitle}
                         variant={service.variant}
                         badges={service.badges}
                         onClick={() => onSelectService(service.title)}
+                        disabled={isBlocked}
                     />
                 </div>
             ))}

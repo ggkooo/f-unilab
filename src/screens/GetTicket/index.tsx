@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../../components/layout/Layout';
-import { DEFAULT_UNILAB_LOCATION } from '../../locations';
+import { DEFAULT_UNILAB_LOCATION, UNILAB_LOCATIONS, type UnilabLocation } from '../../locations';
 import { useRouteLocation } from '../../locations/useRouteLocation';
 import { createTicket } from '../../services/ticketService.ts';
 import { SERVICE_OPTIONS } from './constants';
@@ -9,13 +9,26 @@ import GetTicketHero from './components/GetTicketHero';
 import ServiceOptionsGrid from './components/ServiceOptionsGrid';
 import type { FeedbackType } from './types';
 
+const TICKET_COOLDOWN_MS = 3000;
+
+const buildCooldownState = (value: boolean) =>
+    UNILAB_LOCATIONS.reduce(
+        (accumulator, location) => ({
+            ...accumulator,
+            [location]: value,
+        }),
+        {} as Record<UnilabLocation, boolean>,
+    );
+
 const GetTicket: React.FC = () => {
     const routeLocation = useRouteLocation();
     const activeLocation = routeLocation ?? DEFAULT_UNILAB_LOCATION;
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [cooldownByLocation, setCooldownByLocation] = useState<Record<UnilabLocation, boolean>>(() => buildCooldownState(false));
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [feedback, setFeedback] = useState<string | null>(null);
     const [feedbackType, setFeedbackType] = useState<FeedbackType>(null);
+    const cooldownTimeoutsRef = useRef<Partial<Record<UnilabLocation, number>>>({});
 
     useEffect(() => {
         if (feedbackType !== 'success' || !feedback) {
@@ -30,8 +43,28 @@ const GetTicket: React.FC = () => {
         return () => window.clearTimeout(timeoutId);
     }, [feedback, feedbackType]);
 
+    useEffect(() => {
+        return () => {
+            UNILAB_LOCATIONS.forEach((location) => {
+                const timeoutId = cooldownTimeoutsRef.current[location];
+
+                if (timeoutId) {
+                    window.clearTimeout(timeoutId);
+                }
+            });
+        };
+    }, []);
+
+    const isLocationCoolingDown = cooldownByLocation[activeLocation];
+
     const handleCreateTicket = async (serviceType: string) => {
         if (isSubmitting) {
+            return;
+        }
+
+        if (isLocationCoolingDown) {
+            setFeedback('Aguarde 3 segundos para retirar uma nova senha nesta localização.');
+            setFeedbackType('error');
             return;
         }
 
@@ -50,6 +83,24 @@ const GetTicket: React.FC = () => {
                     : `Solicitacao enviada: ${serviceType}.`,
             );
             setFeedbackType('success');
+
+            setCooldownByLocation((previousState) => ({
+                ...previousState,
+                [activeLocation]: true,
+            }));
+
+            const existingTimeoutId = cooldownTimeoutsRef.current[activeLocation];
+            if (existingTimeoutId) {
+                window.clearTimeout(existingTimeoutId);
+            }
+
+            cooldownTimeoutsRef.current[activeLocation] = window.setTimeout(() => {
+                setCooldownByLocation((previousState) => ({
+                    ...previousState,
+                    [activeLocation]: false,
+                }));
+                delete cooldownTimeoutsRef.current[activeLocation];
+            }, TICKET_COOLDOWN_MS);
         } catch (error) {
             setFeedback(error instanceof Error ? error.message : 'Falha de comunicação com a API.');
             setFeedbackType('error');
@@ -76,6 +127,8 @@ const GetTicket: React.FC = () => {
                         options={SERVICE_OPTIONS}
                         isSubmitting={isSubmitting}
                         selectedService={selectedService}
+                        isBlocked={isSubmitting || isLocationCoolingDown}
+                        blockedSubtitle={isSubmitting ? 'Enviando solicitação...' : 'Aguarde 3 segundos para nova senha nesta localização'}
                         onSelectService={handleCreateTicket}
                     />
                 </div>

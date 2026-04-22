@@ -13,6 +13,7 @@ interface ActionCardProps {
         label: string;
     }>;
     onClick?: () => void;
+    disabled?: boolean;
 }
 
 const variantStyles: Record<VariantType, { icon: string; ring: string; arrow: string; card: string; bg: string }> = {
@@ -39,13 +40,14 @@ const variantStyles: Record<VariantType, { icon: string; ring: string; arrow: st
     },
 };
 
-const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant, badges, onClick }) => {
+const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant, badges, onClick, disabled = false }) => {
     const styles = variantStyles[variant];
 
     return (
         <button
             onClick={onClick}
-            className={`group relative flex h-full min-h-[10rem] w-full flex-col rounded-3xl border p-3 text-left transition-all duration-300 hover:-translate-y-1 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 sm:min-h-[11rem] sm:p-3.5 md:min-h-[11.5rem] lg:min-h-[12rem] lg:p-4 xl:min-h-[14rem] xl:p-5 2xl:min-h-[16rem] ${styles.bg} ${styles.card} ${styles.ring}`}
+            disabled={disabled}
+            className={`group relative flex h-full min-h-[10rem] w-full flex-col rounded-3xl border p-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 sm:min-h-[11rem] sm:p-3.5 md:min-h-[11.5rem] lg:min-h-[12rem] lg:p-4 xl:min-h-[14rem] xl:p-5 2xl:min-h-[16rem] ${styles.bg} ${styles.card} ${styles.ring} ${disabled ? 'cursor-not-allowed opacity-65 saturate-75' : 'hover:-translate-y-1 active:translate-y-0'}`}
         >
             <div className="flex flex-1 flex-col">
                 <div className="mb-2 flex items-start justify-between gap-2 sm:mb-3 sm:gap-3 lg:mb-3 lg:gap-4">
@@ -76,7 +78,7 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant,
                             </div>
                         )}
                     </div>
-                    <span className={`material-icons-outlined translate-x-0 text-3xl transition-transform duration-300 group-hover:translate-x-1 ${styles.arrow}`}>
+                    <span className={`material-icons-outlined translate-x-0 text-3xl transition-transform duration-300 ${disabled ? '' : 'group-hover:translate-x-1'} ${styles.arrow}`}>
                         arrow_forward
                     </span>
                 </div>
@@ -85,7 +87,7 @@ const ActionCard: React.FC<ActionCardProps> = ({ icon, title, subtitle, variant,
                     <span className="text-[0.8rem] font-medium leading-relaxed text-slate-500 sm:text-[0.875rem] lg:text-[0.84rem] xl:text-[0.92rem] 2xl:text-base">{subtitle}</span>
                 )}
             </div>
-            <span className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-400 sm:text-xs lg:mt-2 xl:mt-3 2xl:mt-4">Toque para continuar</span>
+            <span className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-400 sm:text-xs lg:mt-2 xl:mt-3 2xl:mt-4">{disabled ? 'Aguarde para continuar' : 'Toque para continuar'}</span>
         </button>
     );
 };
